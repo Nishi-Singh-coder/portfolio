@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — Nishi Singh</title>
+<meta name="description" content="Get in touch with Nishi Singh — email, phone, LinkedIn, and a contact form.">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='6' y='6' width='12' height='12' transform='rotate(45 12 12)' fill='%23D4FF3A'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-logo">
+    <span class="logo-mark"></span> nishi.singh
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="projects.html">Engagements</a></li>
+    <li><a href="contact.html" class="active">Contact</a></li>
+  </ul>
+  <div class="nav-status">
+    <span class="status-dot"></span>
+    Open to opportunities
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+    <section class="contact-hero">
+      <div class="eyebrow" style="margin-bottom: 1.5rem;">// Contact / 04</div>
+      <h1>Let's build<br>something <em>worthwhile</em>.</h1>
+      <p style="margin-top: 1.5rem;">
+        I'm currently open to senior strategy and operations roles, transformation
+        leadership opportunities, and the occasional advisory engagement. The
+        fastest way to reach me is email — I usually reply within a day or two.
+      </p>
+    </section>
+
+    <section class="contact-grid">
+      <!-- Direct contact -->
+      <div class="contact-info">
+        <a href="mailto:nishisingh89@gmail.com" class="contact-card">
+          <div class="contact-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <rect x="3" y="5" width="18" height="14" rx="1"/>
+              <path d="M3 7l9 6 9-6"/>
+            </svg>
+          </div>
+          <div>
+            <span class="label">Email</span>
+            <span class="value">nishisingh89@gmail.com</span>
+          </div>
+        </a>
+
+        <a href="tel:+447424183692" class="contact-card">
+          <div class="contact-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>
+            </svg>
+          </div>
+          <div>
+            <span class="label">Phone</span>
+            <span class="value">+44 7424 183692</span>
+          </div>
+        </a>
+
+        <a href="https://linkedin.com/in/nishi-singh-639b2558" class="contact-card">
+          <div class="contact-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 18.34V9.67H5.67v8.67h2.67zM7 8.5a1.55 1.55 0 1 0 0-3.1 1.55 1.55 0 0 0 0 3.1zm11.34 9.84v-4.75c0-2.55-1.36-3.74-3.18-3.74-1.47 0-2.13.81-2.5 1.38v-1.18h-2.67c.04.75 0 8.67 0 8.67h2.67v-4.84c0-.24.02-.48.09-.65.19-.48.62-.97 1.36-.97.96 0 1.34.73 1.34 1.8v4.66h2.89z"/>
+            </svg>
+          </div>
+          <div>
+            <span class="label">LinkedIn</span>
+            <span class="value">nishi-singh-639b2558</span>
+          </div>
+        </a>
+
+        <div class="contact-card" style="cursor: default;">
+          <div class="contact-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <div>
+            <span class="label">Based in</span>
+            <span class="value">London, UK</span>
+          </div>
+        </div>
+
+        <div class="contact-card" style="cursor: default;">
+          <div class="contact-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <div>
+            <span class="label">Local time · London</span>
+            <span class="value" id="local-time">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form class="contact-form" onsubmit="handleSubmit(event)">
+        <div class="eyebrow">Or send a note</div>
+        <h3>Drop a line.</h3>
+        <p style="font-size: 0.95rem;">Tell me a little about what you're working on or hiring for, and I'll get back to you.</p>
+
+        <div class="field">
+          <label for="name">Your name</label>
+          <input type="text" id="name" name="name" required placeholder="Ada Lovelace">
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required placeholder="ada@example.com">
+        </div>
+
+        <div class="field">
+          <label for="topic">Topic</label>
+          <input type="text" id="topic" name="topic" placeholder="Hiring, project, advisory, etc.">
+        </div>
+
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" required placeholder="The shorter the better — but say what you need to."></textarea>
+        </div>
+
+        <button type="submit" class="btn" style="margin-top: 0.5rem; align-self: flex-start;">Send message →</button>
+      </form>
+    </section>
+
+    <!-- Quick FAQ -->
+    <section style="padding: 4rem 0;">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow" style="margin-bottom: 1rem;">Before you ask</div>
+          <h2>Quick <span class="serif-italic" style="color: var(--accent);">answers</span>.</h2>
+        </div>
+        <div class="num">[ faq ]</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border);">
+        <div style="background: var(--bg); padding: 2rem;">
+          <h4 style="margin-bottom: 0.75rem;">Are you available for new opportunities?</h4>
+          <p style="font-size: 0.95rem;">Yes — open to senior strategy &amp; operations or transformation roles. Notice period is one month.</p>
+        </div>
+        <div style="background: var(--bg); padding: 2rem;">
+          <h4 style="margin-bottom: 0.75rem;">Do you have right to work in the UK?</h4>
+          <p style="font-size: 0.95rem;">Yes — full right to work in the UK on a Dependent Visa. No sponsorship required.</p>
+        </div>
+        <div style="background: var(--bg); padding: 2rem;">
+          <h4 style="margin-bottom: 0.75rem;">Where are you open to working?</h4>
+          <p style="font-size: 0.95rem;">London-based and open to UK or hybrid roles, with travel where engagements require it.</p>
+        </div>
+        <div style="background: var(--bg); padding: 2rem;">
+          <h4 style="margin-bottom: 0.75rem;">What languages do you speak?</h4>
+          <p style="font-size: 0.95rem;">Fluent in English and Hindi — both used in professional settings across India, Europe, and the UK.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="footer">
+  <div>
+    <span class="footer-mark">nishi singh</span>
+    Strategy &amp; operations, built on data.<br>
+    Last updated May 2026.
+  </div>
+  <div>
+    <strong style="color: var(--text); display: block; margin-bottom: 0.5rem;">Elsewhere</strong>
+    <a href="https://linkedin.com/in/nishi-singh-639b2558">linkedin</a> · <a href="mailto:nishisingh89@gmail.com">email</a>
+  </div>
+  <div class="col-end">
+    <strong style="color: var(--text); display: block; margin-bottom: 0.5rem;">London, UK</strong>
+    Right to work · 1-month notice<br>
+    <span style="color: var(--accent);">●</span> Open to opportunities
+  </div>
+</footer>
+
+<script>
+  // Live local time clock
+  function updateClock() {
+    const el = document.getElementById('local-time');
+    if (!el) return;
+    const now = new Date();
+    const fmt = now.toLocaleTimeString('en-GB', {
+      timeZone: 'Europe/London',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+    el.textContent = fmt + ' GMT';
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Form handler — opens user's email client
+  function handleSubmit(e) {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const topic = document.getElementById('topic').value || 'Hello';
+    const message = document.getElementById('message').value;
+    const subject = encodeURIComponent(`[${topic}] from ${name}`);
+    const body = encodeURIComponent(`${message}\n\n— ${name}\n${email}`);
+    window.location.href = `mailto:nishisingh89@gmail.com?subject=${subject}&body=${body}`;
+  }
+</script>
+
+</body>
+</html>
