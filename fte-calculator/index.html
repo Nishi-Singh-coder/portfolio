@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FTE Sizing Calculator — Nishi Singh</title>
+<meta name="description" content="A free FTE sizing calculator built on real transformation patterns. Size a function, see value-added vs non-value-added split, hub-vs-market recommendation, and a 3-year forecast.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='6' y='6' width='12' height='12' transform='rotate(45 12 12)' fill='%23D4FF3A'/%3E%3C/svg%3E">
+
+<style>
+/* ==========================================================================
+   FTE Sizing Calculator — Single-File Tool
+   Aesthetic continuity with the rest of the portfolio.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=JetBrains+Mono:wght@400;500;600&family=Onest:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #0A0A0B;
+  --bg-2: #101013;
+  --surface: #14141A;
+  --surface-2: #1B1B22;
+  --border: #26262E;
+  --border-strong: #3A3A44;
+  --text: #ECEAE3;
+  --text-dim: #8A8A92;
+  --text-faint: #5C5C66;
+  --accent: #D4FF3A;
+  --accent-dim: #97B82A;
+  --accent-warm: #FFB347;
+  --accent-warn: #FF7043;
+  --serif: 'Fraunces', 'Times New Roman', serif;
+  --sans: 'Onest', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --max-w: 1100px;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 15% -10%, rgba(212, 255, 58, 0.06), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 95% 110%, rgba(255, 87, 34, 0.05), transparent 60%);
+  background-attachment: fixed;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 64px 64px;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1, 0 0 0 0 1, 0 0 0 0 1, 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 1;
+  mix-blend-mode: overlay;
+}
+
+main, nav, footer { position: relative; z-index: 2; }
+
+h1, h2, h3, h4 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-variation-settings: "opsz" 144;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+::selection { background: var(--accent); color: var(--bg); }
+
+/* ===== Nav ===== */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem var(--gutter);
+  background: rgba(10, 10, 11, 0.7);
+  backdrop-filter: blur(18px) saturate(140%);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: var(--mono);
+  font-size: 0.9rem; font-weight: 600;
+  display: flex; align-items: center; gap: 0.5rem;
+  color: var(--text); text-decoration: none;
+}
+.logo-mark {
+  display: inline-block; width: 10px; height: 10px;
+  background: var(--accent); transform: rotate(45deg);
+  box-shadow: 0 0 12px var(--accent);
+}
+.nav-back {
+  font-family: var(--mono); font-size: 0.85rem;
+  color: var(--text-dim); text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-back:hover { color: var(--accent); }
+
+/* ===== Layout ===== */
+.container { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--gutter); }
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.75rem; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--accent);
+  display: inline-flex; align-items: center; gap: 0.6em;
+}
+.eyebrow::before {
+  content: ''; width: 1.5em; height: 1px;
+  background: var(--accent); display: inline-block;
+}
+
+/* ===== Intro ===== */
+.intro {
+  padding: clamp(3rem, 8vh, 5rem) 0 3rem;
+  text-align: left;
+}
+.intro h1 {
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  font-weight: 300;
+  margin: 1.5rem 0 1.5rem;
+  line-height: 1;
+}
+.intro h1 em {
+  font-style: italic; color: var(--accent);
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+}
+.intro-lead {
+  font-size: 1.1rem; color: var(--text); font-weight: 300;
+  max-width: 60ch; margin-bottom: 1rem;
+}
+.intro-lead strong { color: var(--accent); font-weight: 500; }
+.intro-note {
+  font-family: var(--mono); font-size: 0.8rem;
+  color: var(--text-faint); margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-left: 2px solid var(--accent-warm);
+  background: rgba(255, 179, 71, 0.04);
+}
+
+/* ===== Layout grid: form left, results right ===== */
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 2rem;
+  margin: 2rem 0 4rem;
+}
+
+@media (max-width: 920px) {
+  .calc-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== Form ===== */
+.form-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  position: sticky;
+  top: 100px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+@media (max-width: 920px) {
+  .form-panel { position: static; max-height: none; }
+}
+
+.form-panel::-webkit-scrollbar { width: 6px; }
+.form-panel::-webkit-scrollbar-track { background: var(--bg); }
+.form-panel::-webkit-scrollbar-thumb { background: var(--border-strong); }
+
+.form-section {
+  margin-bottom: 2rem;
+}
+.form-section h3 {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.field {
+  margin-bottom: 1.25rem;
+}
+.field label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+.field .hint {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-faint);
+}
+.field input[type="number"],
+.field input[type="text"],
+.field select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.7rem 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.92rem;
+  transition: border-color 0.2s;
+}
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+.field-row .field-sub label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 0.3rem;
+  display: block;
+}
+.field-row .pct-total {
+  grid-column: 1 / -1;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  text-align: right;
+  margin-top: 0.3rem;
+}
+.field-row .pct-total.bad { color: var(--accent-warn); }
+.field-row .pct-total.good { color: var(--accent); }
+
+/* Slider styles */
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--border);
+  outline: none;
+  border-radius: 99px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px; height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 8px var(--accent);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--bg);
+}
+.slider-value {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--accent);
+  font-size: 1.2rem;
+  min-width: 3em;
+  text-align: right;
+}
+
+/* Presets */
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+}
+.preset-btn {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 0.4rem 0.7rem;
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+  border-radius: 99px;
+}
+.preset-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ===== Results panel ===== */
+.results-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.headline {
+  background: linear-gradient(135deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--accent);
+  padding: 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+.headline::before {
+  content: '';
+  position: absolute;
+  top: -30%; right: -10%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(212, 255, 58, 0.15), transparent 70%);
+  pointer-events: none;
+}
+.headline-label {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+.headline-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(4rem, 11vw, 7rem);
+  font-weight: 300;
+  color: var(--accent);
+  line-height: 0.95;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+  display: block;
+  position: relative;
+  transition: opacity 0.3s ease;
+}
+.headline-unit {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+  margin-top: 0.5rem;
+  position: relative;
+}
+.headline-context {
+  margin-top: 1rem;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  position: relative;
+  font-weight: 300;
+}
+.headline-context strong { color: var(--accent); font-weight: 500; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.75rem;
+}
+.panel h3 {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Breakdown by complexity */
+.breakdown {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+.bd-item {
+  text-align: center;
+}
+.bd-item .bd-label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+}
+.bd-item .bd-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 2.5rem;
+  color: var(--text);
+  line-height: 1;
+  font-weight: 300;
+  display: block;
+}
+.bd-item .bd-pct {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin-top: 0.4rem;
+}
+
+/* VA / NVA split */
+.va-split {
+  display: flex;
+  height: 60px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin: 1rem 0;
+}
+.va-split .va-bar {
+  background: var(--accent);
+  color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.va-split .nva-bar {
+  background: var(--surface-2);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  border-left: 1px solid var(--border);
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.va-legend {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.75rem;
+}
+.va-note {
+  margin-top: 1rem;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+.va-note strong { color: var(--accent); font-weight: 500; }
+
+/* Hub/Market */
+.hub-market {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.hm-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 1.25rem;
+  text-align: center;
+}
+.hm-card.recommend {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  position: relative;
+}
+.hm-card.recommend::before {
+  content: '★ Recommended';
+  position: absolute;
+  top: -10px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+}
+.hm-label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+}
+.hm-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 2.2rem;
+  color: var(--accent);
+  line-height: 1;
+  font-weight: 300;
+  display: block;
+}
+.hm-pct {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.4rem;
+}
+.hm-reason {
+  margin-top: 1rem;
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+/* Sensitivity table */
+.sens-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+.sens-table th, .sens-table td {
+  padding: 0.7rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.sens-table th {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+.sens-table td.scenario { color: var(--text); }
+.sens-table td.value {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--accent);
+  font-size: 1.1rem;
+  text-align: right;
+}
+.sens-table td.delta {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+/* Forecast */
+.forecast {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+.fc-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 1rem 0.5rem;
+  text-align: center;
+}
+.fc-year {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+.fc-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.8rem;
+  color: var(--text);
+  font-weight: 300;
+  line-height: 1.2;
+  display: block;
+}
+.fc-delta {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  margin-top: 0.3rem;
+}
+
+/* Assumptions list */
+.assumptions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.assumptions li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: 0.88rem;
+  color: var(--text-dim);
+}
+.assumptions li:last-child { border-bottom: none; }
+.assumptions .key { color: var(--text-faint); }
+.assumptions .val {
+  font-family: var(--mono);
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+/* CTA */
+.cta-box {
+  background: linear-gradient(135deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--accent);
+  padding: 2rem;
+  margin: 1rem 0 3rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta-box::before {
+  content: '';
+  position: absolute;
+  top: -30%; right: -10%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(212, 255, 58, 0.15), transparent 70%);
+  pointer-events: none;
+}
+.cta-box h3 {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 300;
+  position: relative;
+}
+.cta-box h3 em {
+  font-style: italic; color: var(--accent);
+}
+.cta-box p {
+  color: var(--text); max-width: 50ch; margin: 0 auto 1.5rem;
+  font-weight: 300; font-size: 0.95rem;
+  position: relative;
+}
+.cta-row {
+  display: flex; gap: 1rem; justify-content: center;
+  flex-wrap: wrap; position: relative;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.85rem 1.5rem;
+  font-family: var(--mono); font-size: 0.8rem; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  background: var(--accent); color: var(--bg);
+  border: 1px solid var(--accent);
+  cursor: pointer; transition: all 0.2s;
+  text-decoration: none;
+}
+.btn:hover { background: transparent; color: var(--accent); }
+.btn--ghost {
+  background: transparent; color: var(--text);
+  border-color: var(--border-strong);
+}
+.btn--ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+.footer-note {
+  text-align: center; padding: 0 0 4rem;
+  font-family: var(--mono); font-size: 0.75rem;
+  color: var(--text-faint); letter-spacing: 0.08em;
+}
+.footer-note a { color: var(--accent); text-decoration: none; }
+
+@media print {
+  body { background: white; color: black; }
+  body::before, body::after { display: none; }
+  .nav, .form-panel, .cta-box, .footer-note, .preset-row, .intro-note { display: none !important; }
+  .calc-grid { grid-template-columns: 1fr; }
+  .headline, .panel { background: white; border: 1px solid #ddd; color: black; page-break-inside: avoid; }
+  .headline-num, .bd-num, .hm-num, .fc-num, h2 em, h3 em { color: #1a1a1a; }
+  .va-bar { background: #1a1a1a; color: white; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-logo">
+    <span class="logo-mark"></span> nishi.singh
+  </a>
+  <a href="../index.html" class="nav-back">← Back to portfolio</a>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- ===== Intro ===== -->
+    <section class="intro">
+      <div class="eyebrow">A free tool · live calculations</div>
+      <h1>How many <em>FTE</em><br>does this actually need?</h1>
+      <p class="intro-lead">
+        A transparent sizing calculator built on real transformation patterns. Enter your workload assumptions and see the headline FTE, value-added vs non-value-added split, hub-vs-market recommendation, and a 3-year forecast — all updating live.
+      </p>
+      <div class="intro-note">
+        <strong>How to use this:</strong> Pick a preset to get started, then adjust the assumptions to match your context. Every number is calculated transparently — hover over the assumptions panel for the working.
+      </div>
+    </section>
+
+    <!-- ===== Calculator ===== -->
+    <div class="calc-grid">
+
+      <!-- LEFT: Form -->
+      <aside class="form-panel">
+
+        <div class="form-section">
+          <h3>Start with a preset</h3>
+          <div class="preset-row">
+            <button class="preset-btn" onclick="loadPreset('customer-service')">Customer Service</button>
+            <button class="preset-btn" onclick="loadPreset('back-office')">Back Office Ops</button>
+            <button class="preset-btn" onclick="loadPreset('finance')">Finance Shared Svc</button>
+            <button class="preset-btn" onclick="loadPreset('demand-planning')">Demand Planning</button>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>01 · The function</h3>
+          <div class="field">
+            <label>Function or process name <span class="hint">label only</span></label>
+            <input type="text" id="function-name" value="Customer Service Ops" oninput="recalc()">
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>02 · Workload</h3>
+          <div class="field">
+            <label>Annual volume <span class="hint">items/year</span></label>
+            <input type="number" id="volume" value="120000" min="0" step="1000" oninput="recalc()">
+          </div>
+
+          <div class="field">
+            <label>Mix by complexity <span class="hint">% total must = 100</span></label>
+            <div class="field-row">
+              <div class="field-sub">
+                <label>Simple</label>
+                <input type="number" id="mix-simple" value="50" min="0" max="100" oninput="recalc()">
+              </div>
+              <div class="field-sub">
+                <label>Standard</label>
+                <input type="number" id="mix-standard" value="35" min="0" max="100" oninput="recalc()">
+              </div>
+              <div class="field-sub">
+                <label>Complex</label>
+                <input type="number" id="mix-complex" value="15" min="0" max="100" oninput="recalc()">
+              </div>
+              <div class="pct-total" id="mix-total">Total: 100%</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Handle time (minutes per item) <span class="hint">avg per category</span></label>
+            <div class="field-row">
+              <div class="field-sub">
+                <label>Simple</label>
+                <input type="number" id="time-simple" value="6" min="0" step="0.5" oninput="recalc()">
+              </div>
+              <div class="field-sub">
+                <label>Standard</label>
+                <input type="number" id="time-standard" value="18" min="0" step="0.5" oninput="recalc()">
+              </div>
+              <div class="field-sub">
+                <label>Complex</label>
+                <input type="number" id="time-complex" value="45" min="0" step="0.5" oninput="recalc()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>03 · Quality &amp; capacity</h3>
+
+          <div class="field">
+            <label>Rework rate <span class="hint" id="rework-display">8%</span></label>
+            <div class="slider-row">
+              <input type="range" id="rework" min="0" max="30" value="8" oninput="recalc()">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Productive utilisation <span class="hint" id="util-display">75%</span></label>
+            <div class="slider-row">
+              <input type="range" id="utilisation" min="50" max="95" value="75" oninput="recalc()">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Annual working hours per FTE <span class="hint">excl. leave/holidays</span></label>
+            <input type="number" id="annual-hours" value="1760" min="800" max="2200" step="10" oninput="recalc()">
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>04 · Forward look</h3>
+          <div class="field">
+            <label>Annual volume growth <span class="hint" id="growth-display">+5% /yr</span></label>
+            <div class="slider-row">
+              <input type="range" id="growth" min="-15" max="30" value="5" oninput="recalc()">
+            </div>
+          </div>
+          <div class="field">
+            <label>Annual productivity gain <span class="hint" id="prod-display">+3% /yr</span></label>
+            <div class="slider-row">
+              <input type="range" id="productivity" min="0" max="20" value="3" oninput="recalc()">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>05 · Operating model context</h3>
+          <div class="field">
+            <label>Number of markets served <span class="hint">countries/regions</span></label>
+            <input type="number" id="markets" value="6" min="1" max="50" oninput="recalc()">
+          </div>
+          <div class="field">
+            <label>Standardisation potential <span class="hint" id="std-display">60%</span></label>
+            <div class="slider-row">
+              <input type="range" id="standardisation" min="0" max="100" value="60" oninput="recalc()">
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- RIGHT: Results -->
+      <div class="results-panel">
+
+        <!-- Headline -->
+        <div class="headline">
+          <div class="headline-label">Required FTE — Year 1</div>
+          <span class="headline-num" id="headline-fte">—</span>
+          <div class="headline-unit">Full-time equivalents</div>
+          <div class="headline-context" id="headline-context">—</div>
+        </div>
+
+        <!-- Breakdown -->
+        <div class="panel">
+          <h3>FTE by complexity</h3>
+          <div class="breakdown">
+            <div class="bd-item">
+              <div class="bd-label">Simple</div>
+              <span class="bd-num" id="bd-simple">—</span>
+              <div class="bd-pct" id="bd-simple-pct">—</div>
+            </div>
+            <div class="bd-item">
+              <div class="bd-label">Standard</div>
+              <span class="bd-num" id="bd-standard">—</span>
+              <div class="bd-pct" id="bd-standard-pct">—</div>
+            </div>
+            <div class="bd-item">
+              <div class="bd-label">Complex</div>
+              <span class="bd-num" id="bd-complex">—</span>
+              <div class="bd-pct" id="bd-complex-pct">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VA / NVA -->
+        <div class="panel">
+          <h3>Value-added vs non-value-added</h3>
+          <div class="va-split">
+            <div class="va-bar" id="va-bar" style="width: 70%;">VA · 70%</div>
+            <div class="nva-bar" id="nva-bar" style="width: 30%;">NVA · 30%</div>
+          </div>
+          <div class="va-legend">
+            <span>Value-added <span id="va-fte" style="color: var(--accent);">—</span></span>
+            <span><span id="nva-fte" style="color: var(--accent-warn);">—</span> Non-value-added</span>
+          </div>
+          <div class="va-note" id="va-note">
+            <strong>Rule of thumb:</strong> rework, escalations, handoffs, status updates, and unclear ownership drive NVA. Most functions can move 5–15 NVA points to VA within 12 months through process and tooling work.
+          </div>
+        </div>
+
+        <!-- Hub / Market -->
+        <div class="panel">
+          <h3>Hub vs market split</h3>
+          <div class="hub-market">
+            <div class="hm-card" id="hub-card">
+              <div class="hm-label">Hub (centralised)</div>
+              <span class="hm-num" id="hub-fte">—</span>
+              <div class="hm-pct" id="hub-pct">—</div>
+            </div>
+            <div class="hm-card" id="market-card">
+              <div class="hm-label">In-market</div>
+              <span class="hm-num" id="market-fte">—</span>
+              <div class="hm-pct" id="market-pct">—</div>
+            </div>
+          </div>
+          <div class="hm-reason" id="hm-reason">—</div>
+        </div>
+
+        <!-- Sensitivity -->
+        <div class="panel">
+          <h3>Sensitivity analysis</h3>
+          <table class="sens-table">
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th style="text-align: right;">FTE</th>
+                <th style="text-align: right;">Δ</th>
+              </tr>
+            </thead>
+            <tbody id="sens-body"></tbody>
+          </table>
+        </div>
+
+        <!-- Forecast -->
+        <div class="panel">
+          <h3>3-year forecast</h3>
+          <div class="forecast" id="forecast">—</div>
+        </div>
+
+        <!-- Assumptions -->
+        <div class="panel">
+          <h3>Assumptions used</h3>
+          <ul class="assumptions" id="assumptions-list">—</ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-box">
+      <h3>Want to <em>pressure-test</em> these numbers?</h3>
+      <p>
+        Sizing is a starting point, not an answer. The real work is in validating assumptions, surfacing hidden NVA, and stress-testing the operating model that sits behind the numbers.
+      </p>
+      <div class="cta-row">
+        <a href="../contact.html" class="btn">Get in touch →</a>
+        <button class="btn btn--ghost" onclick="window.print()">Print / Save PDF</button>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      Built by Nishi Singh · <a href="../index.html">View portfolio</a> · <a href="../tom-diagnostic/">Try the Operating Model Diagnostic</a> · Calculator v1.0
+    </div>
+
+  </div>
+</main>
+
+<script>
+// ============================================================================
+// FTE Sizing Calculator — Live calculations
+// ============================================================================
+
+// ----- PRESETS (the IP) ------------------------------------------------------
+const PRESETS = {
+  'customer-service': {
+    name: 'Customer Service Ops', volume: 120000,
+    simple: 50, standard: 35, complex: 15,
+    tSimple: 6, tStandard: 18, tComplex: 45,
+    rework: 8, utilisation: 75, hours: 1760,
+    growth: 5, productivity: 3,
+    markets: 6, standardisation: 60
+  },
+  'back-office': {
+    name: 'Back Office Operations', volume: 75000,
+    simple: 40, standard: 40, complex: 20,
+    tSimple: 8, tStandard: 25, tComplex: 60,
+    rework: 12, utilisation: 78, hours: 1760,
+    growth: 2, productivity: 5,
+    markets: 4, standardisation: 75
+  },
+  'finance': {
+    name: 'Finance Shared Service', volume: 50000,
+    simple: 35, standard: 45, complex: 20,
+    tSimple: 10, tStandard: 30, tComplex: 75,
+    rework: 6, utilisation: 80, hours: 1760,
+    growth: 3, productivity: 4,
+    markets: 8, standardisation: 80
+  },
+  'demand-planning': {
+    name: 'Demand Planning', volume: 12000,
+    simple: 30, standard: 50, complex: 20,
+    tSimple: 15, tStandard: 45, tComplex: 120,
+    rework: 10, utilisation: 70, hours: 1760,
+    growth: 4, productivity: 6,
+    markets: 10, standardisation: 50
+  }
+};
+
+function loadPreset(key) {
+  const p = PRESETS[key];
+  if (!p) return;
+  setVal('function-name', p.name);
+  setVal('volume', p.volume);
+  setVal('mix-simple', p.simple);
+  setVal('mix-standard', p.standard);
+  setVal('mix-complex', p.complex);
+  setVal('time-simple', p.tSimple);
+  setVal('time-standard', p.tStandard);
+  setVal('time-complex', p.tComplex);
+  setVal('rework', p.rework);
+  setVal('utilisation', p.utilisation);
+  setVal('annual-hours', p.hours);
+  setVal('growth', p.growth);
+  setVal('productivity', p.productivity);
+  setVal('markets', p.markets);
+  setVal('standardisation', p.standardisation);
+  recalc();
+}
+
+function setVal(id, v) { document.getElementById(id).value = v; }
+function num(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function txt(id) { return document.getElementById(id).value; }
+
+// ----- CORE CALCULATION ------------------------------------------------------
+
+function calculateFTE(inputs) {
+  // Volume by complexity
+  const volSimple   = inputs.volume * (inputs.simple / 100);
+  const volStandard = inputs.volume * (inputs.standard / 100);
+  const volComplex  = inputs.volume * (inputs.complex / 100);
+
+  // Work content (minutes) — apply rework uplift
+  const reworkMult = 1 + (inputs.rework / 100);
+  const minSimple   = volSimple   * inputs.tSimple   * reworkMult;
+  const minStandard = volStandard * inputs.tStandard * reworkMult;
+  const minComplex  = volComplex  * inputs.tComplex  * reworkMult;
+  const totalMinutes = minSimple + minStandard + minComplex;
+
+  // Convert to required productive hours
+  const totalHours = totalMinutes / 60;
+
+  // Available productive hours per FTE per year
+  const productiveHoursPerFTE = inputs.hours * (inputs.utilisation / 100);
+
+  // FTE by complexity
+  const fteSimple   = minSimple   / 60 / productiveHoursPerFTE;
+  const fteStandard = minStandard / 60 / productiveHoursPerFTE;
+  const fteComplex  = minComplex  / 60 / productiveHoursPerFTE;
+  const totalFTE = fteSimple + fteStandard + fteComplex;
+
+  // Value-added vs non-value-added
+  // Heuristic: NVA grows with rework rate and falls with standardisation
+  // Base NVA = 20% + rework + (penalty for low standardisation)
+  const baseNVA = 20;
+  const reworkPenalty = inputs.rework;        // 1pt per % rework
+  const stdPenalty = (100 - inputs.standardisation) * 0.10;
+  let nvaPct = Math.min(55, Math.max(10, baseNVA + reworkPenalty + stdPenalty - 15));
+  const vaPct = 100 - nvaPct;
+  const vaFTE = totalFTE * (vaPct / 100);
+  const nvaFTE = totalFTE * (nvaPct / 100);
+
+  // Hub vs Market
+  // Heuristic: hub % rises with standardisation; complex work skews to market
+  const hubBase = inputs.standardisation * 0.7;
+  const complexDrag = inputs.complex * 0.4;
+  let hubPct = Math.min(85, Math.max(15, hubBase - complexDrag + 10));
+  const marketPct = 100 - hubPct;
+  const hubFTE = totalFTE * (hubPct / 100);
+  const marketFTE = totalFTE * (marketPct / 100);
+
+  // 3-year forecast
+  // Net growth = volume growth - productivity gain (productivity reduces FTE need)
+  const netRate = (inputs.growth - inputs.productivity) / 100;
+  const fteY2 = totalFTE * (1 + netRate);
+  const fteY3 = totalFTE * Math.pow(1 + netRate, 2);
+  const fteY4 = totalFTE * Math.pow(1 + netRate, 3);
+
+  return {
+    totalFTE, fteSimple, fteStandard, fteComplex,
+    vaPct, nvaPct, vaFTE, nvaFTE,
+    hubPct, marketPct, hubFTE, marketFTE,
+    fteY1: totalFTE, fteY2, fteY3, fteY4,
+    totalHours, productiveHoursPerFTE
+  };
+}
+
+// ----- RENDER ----------------------------------------------------------------
+
+function fmt(n, dp = 1) {
+  if (!isFinite(n)) return '—';
+  return n.toLocaleString('en-GB', { minimumFractionDigits: dp, maximumFractionDigits: dp });
+}
+
+function fmtInt(n) {
+  if (!isFinite(n)) return '—';
+  return Math.round(n).toLocaleString('en-GB');
+}
+
+function recalc() {
+  // Read inputs
+  const simple = num('mix-simple');
+  const standard = num('mix-standard');
+  const complex = num('mix-complex');
+  const mixTotal = simple + standard + complex;
+
+  // Mix validity display
+  const mixEl = document.getElementById('mix-total');
+  mixEl.textContent = `Total: ${mixTotal}%`;
+  mixEl.className = 'pct-total ' + (mixTotal === 100 ? 'good' : 'bad');
+
+  // Slider live labels
+  document.getElementById('rework-display').textContent = num('rework') + '%';
+  document.getElementById('util-display').textContent = num('utilisation') + '%';
+  document.getElementById('growth-display').textContent = (num('growth') >= 0 ? '+' : '') + num('growth') + '% /yr';
+  document.getElementById('prod-display').textContent = '+' + num('productivity') + '% /yr';
+  document.getElementById('std-display').textContent = num('standardisation') + '%';
+
+  // Don't calculate if mix is invalid
+  if (mixTotal !== 100) {
+    document.getElementById('headline-fte').textContent = '⚠';
+    document.getElementById('headline-context').innerHTML = `<strong style="color: var(--accent-warn);">Mix totals must equal 100%</strong> — currently ${mixTotal}%. Adjust simple/standard/complex above.`;
+    return;
+  }
+
+  const inputs = {
+    volume: num('volume'),
+    simple, standard, complex,
+    tSimple: num('time-simple'),
+    tStandard: num('time-standard'),
+    tComplex: num('time-complex'),
+    rework: num('rework'),
+    utilisation: num('utilisation'),
+    hours: num('annual-hours'),
+    growth: num('growth'),
+    productivity: num('productivity'),
+    markets: num('markets'),
+    standardisation: num('standardisation')
+  };
+
+  const r = calculateFTE(inputs);
+
+  // Headline
+  document.getElementById('headline-fte').textContent = fmt(r.totalFTE);
+  const funcName = txt('function-name') || 'this function';
+  document.getElementById('headline-context').innerHTML =
+    `<strong>${funcName}</strong> requires <strong>${fmt(r.totalFTE)} FTE</strong> at current assumptions — processing ${fmtInt(inputs.volume)} items/year with ${inputs.rework}% rework and ${inputs.utilisation}% productive utilisation.`;
+
+  // Breakdown
+  document.getElementById('bd-simple').textContent = fmt(r.fteSimple);
+  document.getElementById('bd-standard').textContent = fmt(r.fteStandard);
+  document.getElementById('bd-complex').textContent = fmt(r.fteComplex);
+  document.getElementById('bd-simple-pct').textContent = fmt(r.fteSimple / r.totalFTE * 100, 0) + '%';
+  document.getElementById('bd-standard-pct').textContent = fmt(r.fteStandard / r.totalFTE * 100, 0) + '%';
+  document.getElementById('bd-complex-pct').textContent = fmt(r.fteComplex / r.totalFTE * 100, 0) + '%';
+
+  // VA / NVA
+  document.getElementById('va-bar').style.width = r.vaPct + '%';
+  document.getElementById('va-bar').textContent = `VA · ${fmt(r.vaPct, 0)}%`;
+  document.getElementById('nva-bar').style.width = r.nvaPct + '%';
+  document.getElementById('nva-bar').textContent = `NVA · ${fmt(r.nvaPct, 0)}%`;
+  document.getElementById('va-fte').textContent = fmt(r.vaFTE) + ' FTE';
+  document.getElementById('nva-fte').textContent = fmt(r.nvaFTE) + ' FTE';
+
+  // VA narrative
+  let vaNote = '';
+  if (r.nvaPct > 40) {
+    vaNote = `<strong>${fmt(r.nvaPct, 0)}% NVA is high.</strong> With rework at ${inputs.rework}% and standardisation at ${inputs.standardisation}%, there is meaningful headroom — moving ${fmt(r.nvaFTE * 0.3)} FTE worth of NVA work to VA over 12 months is plausible.`;
+  } else if (r.nvaPct > 25) {
+    vaNote = `<strong>${fmt(r.nvaPct, 0)}% NVA is typical</strong> for a function with this rework and standardisation profile. Most realistic 12-month target: shift 5–10 percentage points to VA.`;
+  } else {
+    vaNote = `<strong>${fmt(r.nvaPct, 0)}% NVA is lean</strong> for this type of function. Further reduction likely requires automation or scope narrowing, not just process work.`;
+  }
+  document.getElementById('va-note').innerHTML = vaNote;
+
+  // Hub / Market
+  document.getElementById('hub-fte').textContent = fmt(r.hubFTE);
+  document.getElementById('hub-pct').textContent = fmt(r.hubPct, 0) + '% of total';
+  document.getElementById('market-fte').textContent = fmt(r.marketFTE);
+  document.getElementById('market-pct').textContent = fmt(r.marketPct, 0) + '% of total';
+
+  // Recommended card
+  document.getElementById('hub-card').classList.toggle('recommend', r.hubPct >= r.marketPct);
+  document.getElementById('market-card').classList.toggle('recommend', r.marketPct > r.hubPct);
+
+  let reason = '';
+  if (r.hubPct >= 70) {
+    reason = `High standardisation potential (${inputs.standardisation}%) and a low share of complex work make this a strong candidate for hub-led delivery. Expect <strong>${fmt(r.hubFTE)} FTE in the hub</strong> serving ${inputs.markets} markets, with thin in-market presence (${fmt(r.marketFTE)} FTE) for escalations and local nuance.`;
+  } else if (r.hubPct >= 50) {
+    reason = `A balanced model. Standard work centralised, complex and locally-specific work kept in-market. The split (${fmt(r.hubPct, 0)}/${fmt(r.marketPct, 0)}) reflects ${inputs.standardisation}% standardisation potential moderated by the ${inputs.complex}% complex-work share.`;
+  } else if (r.hubPct >= 30) {
+    reason = `Market-led delivery with central support. With ${inputs.complex}% complex work and ${inputs.standardisation}% standardisation, most activity stays close to the market. Hub functions are likely best limited to expertise pools, governance, and platform support.`;
+  } else {
+    reason = `Decentralised by necessity. Low standardisation (${inputs.standardisation}%) and a complex work mix mean hub-led delivery would be high-risk. Focus on shared tooling and methodology rather than shared FTE.`;
+  }
+  document.getElementById('hm-reason').innerHTML = reason;
+
+  // Sensitivity
+  const sensBody = document.getElementById('sens-body');
+  const scenarios = [
+    { label: 'Base case', inputs: inputs },
+    { label: 'Volume +20%', inputs: { ...inputs, volume: inputs.volume * 1.2 } },
+    { label: 'Volume −20%', inputs: { ...inputs, volume: inputs.volume * 0.8 } },
+    { label: 'Utilisation −5pp', inputs: { ...inputs, utilisation: inputs.utilisation - 5 } },
+    { label: 'Rework cut in half', inputs: { ...inputs, rework: inputs.rework / 2 } },
+    { label: 'Handle time −15% (auto)', inputs: { ...inputs, tSimple: inputs.tSimple * 0.85, tStandard: inputs.tStandard * 0.85, tComplex: inputs.tComplex * 0.85 } }
+  ];
+  const baseFTE = r.totalFTE;
+  sensBody.innerHTML = scenarios.map(s => {
+    const sr = calculateFTE(s.inputs);
+    const delta = sr.totalFTE - baseFTE;
+    const deltaStr = (delta >= 0 ? '+' : '') + fmt(delta);
+    const deltaColor = Math.abs(delta) < 0.5 ? 'var(--text-faint)' :
+                       delta > 0 ? 'var(--accent-warn)' : 'var(--accent)';
+    return `
+      <tr>
+        <td class="scenario">${s.label}</td>
+        <td class="value">${fmt(sr.totalFTE)}</td>
+        <td class="delta" style="color: ${deltaColor};">${deltaStr}</td>
+      </tr>
+    `;
+  }).join('');
+
+  // Forecast
+  const forecast = document.getElementById('forecast');
+  const years = [
+    { y: 'Year 1', v: r.fteY1, base: true },
+    { y: 'Year 2', v: r.fteY2 },
+    { y: 'Year 3', v: r.fteY3 },
+    { y: 'Year 4', v: r.fteY4 }
+  ];
+  forecast.innerHTML = years.map((yr, i) => {
+    const delta = i === 0 ? '' : `<div class="fc-delta">${yr.v >= r.fteY1 ? '+' : ''}${fmt(yr.v - r.fteY1)}</div>`;
+    return `
+      <div class="fc-item">
+        <div class="fc-year">${yr.y}</div>
+        <span class="fc-num" style="${yr.base ? 'color: var(--accent);' : ''}">${fmt(yr.v)}</span>
+        ${delta}
+      </div>
+    `;
+  }).join('');
+
+  // Assumptions
+  const assumptionsList = document.getElementById('assumptions-list');
+  assumptionsList.innerHTML = `
+    <li><span class="key">Annual volume</span><span class="val">${fmtInt(inputs.volume)} items</span></li>
+    <li><span class="key">Weighted avg handle time</span><span class="val">${fmt(r.totalHours * 60 / inputs.volume / (1 + inputs.rework/100), 1)} min</span></li>
+    <li><span class="key">Total work content</span><span class="val">${fmtInt(r.totalHours)} hours/yr</span></li>
+    <li><span class="key">Rework uplift</span><span class="val">+${inputs.rework}%</span></li>
+    <li><span class="key">Productive hrs / FTE / yr</span><span class="val">${fmtInt(r.productiveHoursPerFTE)} hours</span></li>
+    <li><span class="key">VA/NVA logic</span><span class="val">f(rework, standardisation)</span></li>
+    <li><span class="key">Hub/Market logic</span><span class="val">f(standardisation, complexity)</span></li>
+    <li><span class="key">Net YoY change</span><span class="val">${(inputs.growth - inputs.productivity) >= 0 ? '+' : ''}${fmt(inputs.growth - inputs.productivity, 1)}%</span></li>
+  `;
+}
+
+// Initial render
+recalc();
+</script>
+
+</body>
+</html>
