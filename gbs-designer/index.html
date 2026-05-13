@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GBS Operating Model Designer — Nishi Singh</title>
+<meta name="description" content="A free, interactive tool for designing a Global Business Services operating model. Build your taxonomy, choose your operating model, and disposition each process — all in one place.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='6' y='6' width='12' height='12' transform='rotate(45 12 12)' fill='%23D4FF3A'/%3E%3C/svg%3E">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=JetBrains+Mono:wght@400;500;600&family=Onest:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #0A0A0B;
+  --bg-2: #101013;
+  --surface: #14141A;
+  --surface-2: #1B1B22;
+  --border: #26262E;
+  --border-strong: #3A3A44;
+  --text: #ECEAE3;
+  --text-dim: #8A8A92;
+  --text-faint: #5C5C66;
+  --accent: #D4FF3A;
+  --accent-dim: #97B82A;
+  --accent-warm: #FFB347;
+  --accent-warn: #FF7043;
+  --accent-blue: #58A6FF;
+  --accent-purple: #BC8CFF;
+  --serif: 'Fraunces', 'Times New Roman', serif;
+  --sans: 'Onest', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --max-w: 1280px;
+  --gutter: clamp(1rem, 3vw, 2.5rem);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 15% -10%, rgba(212, 255, 58, 0.06), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 95% 110%, rgba(255, 87, 34, 0.05), transparent 60%);
+  background-attachment: fixed;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 64px 64px;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+}
+
+main, nav, footer { position: relative; z-index: 2; }
+
+h1, h2, h3, h4 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-variation-settings: "opsz" 144;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+::selection { background: var(--accent); color: var(--bg); }
+
+/* ===== Nav ===== */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem var(--gutter);
+  background: rgba(10, 10, 11, 0.85);
+  backdrop-filter: blur(18px) saturate(140%);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: var(--mono);
+  font-size: 0.9rem; font-weight: 600;
+  display: flex; align-items: center; gap: 0.5rem;
+  color: var(--text); text-decoration: none;
+}
+.logo-mark {
+  display: inline-block; width: 10px; height: 10px;
+  background: var(--accent); transform: rotate(45deg);
+  box-shadow: 0 0 12px var(--accent);
+}
+.nav-back {
+  font-family: var(--mono); font-size: 0.85rem;
+  color: var(--text-dim); text-decoration: none;
+}
+.nav-back:hover { color: var(--accent); }
+
+/* ===== Stage progress ===== */
+.stage-bar {
+  position: sticky;
+  top: 57px;
+  z-index: 99;
+  background: rgba(10, 10, 11, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.85rem var(--gutter);
+}
+.stage-bar-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.stage-steps {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.stage-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: all 0.2s;
+}
+.stage-step:hover {
+  color: var(--text-dim);
+  border-color: var(--border-strong);
+}
+.stage-step.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(212, 255, 58, 0.08);
+}
+.stage-step.complete {
+  color: var(--text);
+}
+.stage-step.complete::before {
+  content: '✓';
+  color: var(--accent);
+  font-weight: 700;
+}
+.stage-step.locked {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.stage-step .num {
+  font-style: italic;
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+.stage-arrow {
+  color: var(--text-faint);
+  font-size: 0.8rem;
+}
+.stage-meta {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  letter-spacing: 0.05em;
+}
+
+/* ===== Layout ===== */
+.container { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--gutter); }
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.75rem; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--accent);
+  display: inline-flex; align-items: center; gap: 0.6em;
+}
+.eyebrow::before {
+  content: ''; width: 1.5em; height: 1px;
+  background: var(--accent); display: inline-block;
+}
+
+/* ===== Screens ===== */
+.screen { display: none; padding: 2.5rem 0; animation: rise 0.5s ease both; }
+.screen.active { display: block; }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.screen-head {
+  margin-bottom: 2.5rem;
+}
+.screen-head h2 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 300;
+  margin: 1rem 0 1rem;
+}
+.screen-head h2 em {
+  font-style: italic; color: var(--accent);
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+}
+.screen-head p {
+  color: var(--text-dim);
+  max-width: 65ch;
+  font-size: 1.05rem;
+  font-weight: 300;
+}
+
+/* ===== Intro / landing screen ===== */
+.intro-stages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin: 2rem 0;
+}
+.intro-stage {
+  background: var(--bg);
+  padding: 1.5rem;
+  position: relative;
+}
+.intro-stage.future { opacity: 0.5; }
+.intro-stage .num {
+  font-family: var(--serif); font-style: italic;
+  font-size: 2.5rem; color: var(--accent);
+  line-height: 1; font-weight: 300;
+  display: block; margin-bottom: 0.5rem;
+}
+.intro-stage h4 {
+  font-size: 1.15rem; color: var(--text);
+  margin-bottom: 0.5rem;
+}
+.intro-stage p {
+  font-size: 0.85rem; color: var(--text-dim);
+  line-height: 1.5;
+}
+.intro-stage .tag {
+  position: absolute;
+  top: 0.75rem; right: 0.75rem;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-warm);
+}
+.intro-stage.future .tag { color: var(--text-faint); }
+
+.intro-cta {
+  margin-top: 2rem;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.9rem 1.6rem;
+  font-family: var(--mono); font-size: 0.82rem; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  background: var(--accent); color: var(--bg);
+  border: 1px solid var(--accent);
+  cursor: pointer; transition: all 0.2s;
+  text-decoration: none;
+}
+.btn:hover { background: transparent; color: var(--accent); }
+.btn--ghost {
+  background: transparent; color: var(--text);
+  border-color: var(--border-strong);
+}
+.btn--ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn--sm { padding: 0.6rem 1rem; font-size: 0.72rem; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:disabled:hover { background: var(--accent); color: var(--bg); }
+
+.btn-row { display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap; }
+
+/* ===== Function selector (Stage 1 entry) ===== */
+.function-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.fn-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  text-align: left;
+}
+.fn-card:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  transform: translateY(-2px);
+}
+.fn-card.active {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.fn-card h4 {
+  font-size: 1.2rem; color: var(--text);
+  margin-bottom: 0.5rem;
+}
+.fn-card p {
+  font-size: 0.85rem; color: var(--text-dim);
+  line-height: 1.5;
+}
+.fn-card .fn-meta {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  margin-top: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Taxonomy table (Stage 1) ===== */
+.tax-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.tax-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+.tax-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+}
+.tax-table thead th {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  text-align: left;
+  padding: 0.85rem 0.6rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  white-space: nowrap;
+}
+.tax-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.tax-table tbody tr:hover { background: rgba(212, 255, 58, 0.03); }
+.tax-table td {
+  padding: 0.5rem 0.6rem;
+  font-size: 0.88rem;
+  color: var(--text);
+  vertical-align: middle;
+}
+.tax-table td.l1 {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+}
+.tax-table td.proc-name { min-width: 240px; }
+.tax-table td.proc-name input { width: 100%; }
+
+.tax-table input[type="text"],
+.tax-table input[type="number"],
+.tax-table select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.4rem 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  width: 100%;
+  min-width: 60px;
+}
+.tax-table input:focus,
+.tax-table select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.tax-table .del-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+.tax-table .del-btn:hover {
+  border-color: var(--accent-warn);
+  color: var(--accent-warn);
+}
+
+.tax-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-top: 1rem;
+}
+.tax-summary .cell {
+  background: var(--bg);
+  padding: 1rem 1.25rem;
+}
+.tax-summary .key {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+  display: block;
+  margin-bottom: 0.3rem;
+}
+.tax-summary .val {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.75rem;
+  color: var(--accent);
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* ===== Operating Model choices (Stage 2) ===== */
+.om-section {
+  margin-bottom: 2.5rem;
+}
+.om-section h3 {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.om-section .sub {
+  font-size: 0.92rem;
+  color: var(--text-dim);
+  margin-bottom: 1.25rem;
+}
+.om-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+.om-option {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+}
+.om-option:hover { border-color: var(--border-strong); }
+.om-option.selected {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.om-option.selected::before {
+  content: '✓';
+  position: absolute;
+  top: 0.75rem; right: 0.85rem;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1rem;
+}
+.om-option h4 {
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+.om-option .pros, .om-option .cons {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin-top: 0.6rem;
+}
+.om-option .pros { color: var(--text-dim); }
+.om-option .pros::before {
+  content: '+ ';
+  color: var(--accent);
+  font-weight: 700;
+}
+.om-option .cons { color: var(--text-dim); }
+.om-option .cons::before {
+  content: '− ';
+  color: var(--accent-warn);
+  font-weight: 700;
+}
+
+/* ===== Disposition Matrix (Stage 3) ===== */
+.disposition-layout {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+@media (max-width: 920px) {
+  .disposition-layout { grid-template-columns: 1fr; }
+}
+
+.disp-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+.disp-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+.disp-table thead th {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  text-align: left;
+  padding: 0.85rem 0.6rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+.disp-table tbody tr {
+  border-bottom: 1px solid var(--border);
+}
+.disp-table tbody tr.highlighted { background: rgba(212, 255, 58, 0.06); }
+.disp-table td {
+  padding: 0.6rem 0.6rem;
+  font-size: 0.85rem;
+  color: var(--text);
+  vertical-align: middle;
+}
+.disp-table .proc-cell {
+  min-width: 200px;
+}
+.disp-table .proc-cell .proc-name {
+  color: var(--text);
+  font-weight: 500;
+}
+.disp-table .proc-cell .proc-l1 {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  margin-top: 0.2rem;
+  display: block;
+}
+.disp-table select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.45rem 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  width: 100%;
+  min-width: 140px;
+}
+.disp-table .recommended {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  margin-top: 0.3rem;
+  display: block;
+}
+.disp-table select.override {
+  border-color: var(--accent-warm);
+}
+
+/* Disposition tag colours */
+.disp-tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.disp-stay   { background: rgba(255, 87, 34, 0.12); color: var(--accent-warn); border: 1px solid var(--accent-warn); }
+.disp-hub    { background: rgba(212, 255, 58, 0.12); color: var(--accent);     border: 1px solid var(--accent); }
+.disp-coe    { background: rgba(188, 140, 255, 0.12); color: var(--accent-purple); border: 1px solid var(--accent-purple); }
+.disp-outsource { background: rgba(88, 166, 255, 0.12); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
+.disp-automate { background: rgba(255, 179, 71, 0.12); color: var(--accent-warm); border: 1px solid var(--accent-warm); }
+.disp-retire { background: rgba(140, 140, 152, 0.12); color: var(--text-dim);   border: 1px solid var(--text-dim); }
+
+/* Matrix chart (Stage 3 sidebar) */
+.disp-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.matrix-panel, .stack-panel, .headline-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+}
+.matrix-panel h4, .stack-panel h4, .headline-panel h4 {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+#matrix-svg { width: 100%; height: auto; }
+
+.stack-bar {
+  height: 36px;
+  display: flex;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+.stack-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.stack-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+.stack-legend-item {
+  display: flex; align-items: center; gap: 0.4rem;
+  color: var(--text-dim);
+}
+.stack-legend-dot {
+  width: 8px; height: 8px; border-radius: 2px;
+}
+
+.headline-stat {
+  text-align: center;
+}
+.headline-stat .num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 3.5rem;
+  color: var(--accent);
+  font-weight: 300;
+  line-height: 1;
+  display: block;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+}
+.headline-stat .label {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 0.5rem;
+}
+
+/* ===== Summary screen (Stage 4) ===== */
+.summary-section {
+  margin-bottom: 2.5rem;
+}
+.summary-section h3 {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+  letter-spacing: -0.015em;
+}
+.summary-section h3 em {
+  font-style: italic; color: var(--accent);
+}
+.summary-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.75rem;
+}
+.summary-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px dashed var(--border);
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-row .k {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.summary-row .v {
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.next-steps {
+  background: linear-gradient(135deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--accent);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+.next-steps::before {
+  content: '';
+  position: absolute;
+  top: -30%; right: -10%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(212, 255, 58, 0.12), transparent 70%);
+  pointer-events: none;
+}
+.next-steps h3 {
+  font-family: var(--serif);
+  font-size: 1.75rem;
+  font-weight: 300;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+.next-steps h3 em {
+  font-style: italic; color: var(--accent);
+}
+.next-steps p {
+  color: var(--text); margin-bottom: 1.5rem;
+  font-weight: 300; max-width: 60ch;
+  position: relative;
+}
+.next-stages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+.next-stage {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 1rem;
+}
+.next-stage .num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.5rem;
+  color: var(--accent);
+  font-weight: 300;
+}
+.next-stage h5 {
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+  margin: 0.25rem 0 0.4rem;
+}
+.next-stage p {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* ===== Reset prompt ===== */
+.reset-banner {
+  background: rgba(255, 179, 71, 0.08);
+  border-left: 3px solid var(--accent-warm);
+  padding: 1rem 1.25rem;
+  margin: 1rem 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.reset-banner p {
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  margin: 0;
+}
+.reset-banner strong { color: var(--accent-warm); }
+
+/* ===== CTA ===== */
+.cta-box {
+  background: linear-gradient(135deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--accent);
+  padding: 2rem;
+  margin: 1.5rem 0 3rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta-box::before {
+  content: '';
+  position: absolute;
+  top: -30%; right: -10%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(212, 255, 58, 0.15), transparent 70%);
+  pointer-events: none;
+}
+.cta-box h3 {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 300;
+  position: relative;
+}
+.cta-box h3 em { font-style: italic; color: var(--accent); }
+.cta-box p {
+  color: var(--text); max-width: 50ch; margin: 0 auto 1.25rem;
+  font-weight: 300; font-size: 0.95rem;
+  position: relative;
+}
+.cta-row {
+  display: flex; gap: 1rem; justify-content: center;
+  flex-wrap: wrap; position: relative;
+}
+
+.footer-note {
+  text-align: center; padding: 0 0 4rem;
+  font-family: var(--mono); font-size: 0.75rem;
+  color: var(--text-faint); letter-spacing: 0.08em;
+}
+.footer-note a { color: var(--accent); text-decoration: none; }
+
+/* ===== Responsive ===== */
+@media (max-width: 720px) {
+  .stage-bar-inner { flex-direction: column; align-items: flex-start; }
+  .stage-step .num { display: none; }
+  .stage-step { padding: 0.25rem 0.5rem; font-size: 0.7rem; }
+  .stage-arrow { display: none; }
+}
+
+@media print {
+  body { background: white; color: black; }
+  body::before, body::after { display: none; }
+  .nav, .stage-bar, .btn-row, .cta-box, .footer-note, .tax-controls, .reset-banner, .intro-stages { display: none !important; }
+  .screen { display: block !important; padding: 0.5rem 0; }
+  .tax-table-wrap, .disp-table-wrap, .summary-box, .matrix-panel, .stack-panel, .headline-panel, .next-steps {
+    background: white; border: 1px solid #ddd; color: black; page-break-inside: avoid;
+  }
+  .headline-stat .num, .num, h2 em, h3 em { color: #1a1a1a; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="../index.html" class="nav-logo">
+    <span class="logo-mark"></span> nishi.singh
+  </a>
+  <a href="../index.html" class="nav-back">← Back to portfolio</a>
+</nav>
+
+<!-- Stage progress bar -->
+<div class="stage-bar" id="stage-bar" style="display: none;">
+  <div class="stage-bar-inner">
+    <div class="stage-steps">
+      <button class="stage-step" data-stage="1" onclick="goToStage(1)">
+        <span class="num">01</span> Taxonomy
+      </button>
+      <span class="stage-arrow">→</span>
+      <button class="stage-step locked" data-stage="2" onclick="goToStage(2)">
+        <span class="num">02</span> Operating Model
+      </button>
+      <span class="stage-arrow">→</span>
+      <button class="stage-step locked" data-stage="3" onclick="goToStage(3)">
+        <span class="num">03</span> Disposition
+      </button>
+      <span class="stage-arrow">→</span>
+      <button class="stage-step locked" data-stage="4" onclick="goToStage(4)">
+        <span class="num">04</span> Summary
+      </button>
+    </div>
+    <div class="stage-meta" id="stage-meta">Function: —</div>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+
+    <!-- ============================================================
+         SCREEN 0 — INTRO
+         ============================================================ -->
+    <section class="screen active" id="screen-intro">
+      <div class="screen-head" style="padding-top: 3rem;">
+        <div class="eyebrow">A free tool · ~20 minutes</div>
+        <h2>Design your GBS<br><em>operating model</em>.</h2>
+        <p>
+          An end-to-end interactive workspace for shaping a Global Business Services transformation. Build your process taxonomy, choose your operating model, and disposition every process — Stay in Market, Hub, Centre of Excellence, Outsource, Automate, or Retire. All your work saves automatically.
+        </p>
+      </div>
+
+      <div class="intro-stages">
+        <div class="intro-stage">
+          <span class="num">01</span>
+          <span class="tag">Build</span>
+          <h4>Taxonomy</h4>
+          <p>Pick a function and refine the process inventory: volumes, FTE, complexity, and local nuance.</p>
+        </div>
+        <div class="intro-stage">
+          <span class="num">02</span>
+          <span class="tag">Choose</span>
+          <h4>Operating Model</h4>
+          <p>Service delivery shape, number of hubs, geography, and governance — with pros and cons.</p>
+        </div>
+        <div class="intro-stage">
+          <span class="num">03</span>
+          <span class="tag">Disposition</span>
+          <h4>Disposition Matrix</h4>
+          <p>For each process, decide what stays, what moves, what is outsourced or automated.</p>
+        </div>
+        <div class="intro-stage">
+          <span class="num">04</span>
+          <span class="tag">Output</span>
+          <h4>Summary &amp; Playbook</h4>
+          <p>Executive-ready summary you can print, share, and use to scope the next phase of work.</p>
+        </div>
+        <div class="intro-stage future">
+          <span class="num">05</span>
+          <span class="tag">Soon</span>
+          <h4>To-Be Design</h4>
+          <p>Process simplification, tech architecture, and capability requirements. Coming in v2.</p>
+        </div>
+        <div class="intro-stage future">
+          <span class="num">06</span>
+          <span class="tag">Soon</span>
+          <h4>Risk &amp; Transition</h4>
+          <p>Risk register, mitigation plan, wave plan, and transition roadmap. Coming in v2.</p>
+        </div>
+      </div>
+
+      <div class="intro-cta">
+        <button class="btn" onclick="startDesigner()">Start designing →</button>
+        <button class="btn btn--ghost" onclick="loadSavedSession()" id="resume-btn" style="display: none;">Resume saved session</button>
+      </div>
+
+      <p style="margin-top: 1.5rem; font-family: var(--mono); font-size: 0.78rem; color: var(--text-faint);">
+        Your work saves to your browser automatically. No account needed, nothing leaves your device.
+      </p>
+    </section>
+
+    <!-- ============================================================
+         SCREEN 1 — TAXONOMY BUILDER
+         ============================================================ -->
+    <section class="screen" id="screen-1">
+      <div class="screen-head">
+        <div class="eyebrow">Stage 1 / 4</div>
+        <h2>Build your <em>process taxonomy</em>.</h2>
+        <p>Pick a function to load a starter taxonomy, then edit it to match your reality. Add custom processes, refine volumes and FTE, mark complexity and local nuance. This is the foundation everything else builds on.</p>
+      </div>
+
+      <div class="function-picker" id="function-picker"></div>
+
+      <div id="taxonomy-area" style="display: none;">
+        <div class="tax-controls">
+          <div>
+            <span class="eyebrow" style="margin-bottom: 0;">Process inventory</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn--ghost btn--sm" onclick="addProcess()">+ Add process</button>
+            <button class="btn btn--ghost btn--sm" onclick="resetTaxonomy()">↺ Reset taxonomy</button>
+          </div>
+        </div>
+
+        <div class="tax-table-wrap">
+          <table class="tax-table">
+            <thead>
+              <tr>
+                <th>L1 / L2</th>
+                <th>Process (L3)</th>
+                <th>Volume / yr</th>
+                <th>FTE</th>
+                <th>Location</th>
+                <th>Complexity</th>
+                <th>Local nuance</th>
+                <th>Standardisable</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tax-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="tax-summary">
+          <div class="cell">
+            <span class="key">Processes</span>
+            <span class="val" id="tax-count">0</span>
+          </div>
+          <div class="cell">
+            <span class="key">Total FTE</span>
+            <span class="val" id="tax-fte">0</span>
+          </div>
+          <div class="cell">
+            <span class="key">Annual volume</span>
+            <span class="val" id="tax-volume">0</span>
+          </div>
+          <div class="cell">
+            <span class="key">High complexity</span>
+            <span class="val" id="tax-complex">0</span>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn" onclick="goToStage(2)" id="to-stage-2">Continue to operating model →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SCREEN 2 — OPERATING MODEL
+         ============================================================ -->
+    <section class="screen" id="screen-2">
+      <div class="screen-head">
+        <div class="eyebrow">Stage 2 / 4</div>
+        <h2>Choose your <em>operating model</em>.</h2>
+        <p>Four structural choices shape what your GBS looks like. Each has trade-offs — read the pros and cons before deciding. Your choices here influence the disposition recommendations in the next stage.</p>
+      </div>
+
+      <div class="om-section">
+        <h3>01 · Service delivery model</h3>
+        <p class="sub">How will services be delivered overall?</p>
+        <div class="om-options" id="om-delivery"></div>
+      </div>
+
+      <div class="om-section">
+        <h3>02 · Hub footprint</h3>
+        <p class="sub">How many delivery hubs make sense for your scale?</p>
+        <div class="om-options" id="om-hubs"></div>
+      </div>
+
+      <div class="om-section">
+        <h3>03 · Geography strategy</h3>
+        <p class="sub">Where should the hubs sit?</p>
+        <div class="om-options" id="om-geo"></div>
+      </div>
+
+      <div class="om-section">
+        <h3>04 · Governance model</h3>
+        <p class="sub">Who holds accountability for outcomes?</p>
+        <div class="om-options" id="om-gov"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn--ghost" onclick="goToStage(1)">← Back to taxonomy</button>
+        <button class="btn" onclick="goToStage(3)" id="to-stage-3">Continue to disposition →</button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SCREEN 3 — DISPOSITION MATRIX
+         ============================================================ -->
+    <section class="screen" id="screen-3">
+      <div class="screen-head">
+        <div class="eyebrow">Stage 3 / 4</div>
+        <h2>Disposition each <em>process</em>.</h2>
+        <p>For every process from your taxonomy, decide where it should live in the future state. The tool pre-recommends based on volume, complexity, local nuance, and your operating model choices — but you have the final call.</p>
+      </div>
+
+      <div class="disposition-layout">
+        <div class="disp-table-wrap">
+          <table class="disp-table">
+            <thead>
+              <tr>
+                <th>Process</th>
+                <th>FTE</th>
+                <th>Disposition</th>
+              </tr>
+            </thead>
+            <tbody id="disp-tbody"></tbody>
+          </table>
+        </div>
+
+        <aside class="disp-sidebar">
+          <div class="headline-panel">
+            <div class="headline-stat">
+              <span class="num" id="moving-pct">—</span>
+              <div class="label">of FTE moving location</div>
+            </div>
+          </div>
+
+          <div class="matrix-panel">
+            <h4>Strategic positioning</h4>
+            <svg id="matrix-svg" viewBox="0 0 320 320"></svg>
+            <p style="font-family: var(--mono); font-size: 0.7rem; color: var(--text-faint); margin-top: 0.75rem; text-align: center;">
+              Volume × Standardisation, bubble size = FTE
+            </p>
+          </div>
+
+          <div class="stack-panel">
+            <h4>FTE disposition split</h4>
+            <div class="stack-bar" id="stack-bar"></div>
+            <div class="stack-legend" id="stack-legend"></div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn--ghost" onclick="goToStage(2)">← Back to operating model</button>
+        <button class="btn" onclick="goToStage(4)">Generate summary →</button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SCREEN 4 — SUMMARY
+         ============================================================ -->
+    <section class="screen" id="screen-4">
+      <div class="screen-head">
+        <div class="eyebrow">Summary</div>
+        <h2>Your GBS <em>blueprint</em>.</h2>
+        <p>Executive-ready summary of the operating model you've designed. Print or save as PDF to share with your team, or use it as the scope document for the next phase of work.</p>
+      </div>
+
+      <div class="summary-section">
+        <h3>Function in <em>scope</em></h3>
+        <div class="summary-box" id="summary-function"></div>
+      </div>
+
+      <div class="summary-section">
+        <h3>Operating model <em>choices</em></h3>
+        <div class="summary-box" id="summary-om"></div>
+      </div>
+
+      <div class="summary-section">
+        <h3>Disposition <em>summary</em></h3>
+        <div class="summary-box" id="summary-disposition"></div>
+      </div>
+
+      <div class="summary-section">
+        <h3>Process-by-process <em>plan</em></h3>
+        <div class="disp-table-wrap">
+          <table class="disp-table">
+            <thead>
+              <tr>
+                <th>Process</th>
+                <th>FTE</th>
+                <th>Current location</th>
+                <th>Future disposition</th>
+              </tr>
+            </thead>
+            <tbody id="summary-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="next-steps">
+        <h3>What's <em>next</em>?</h3>
+        <p>You've completed the foundation. The next three stages of a full GBS transformation — to-be design, FTE sizing, and risk &amp; transition planning — are coming to this tool. In the meantime, you can use the FTE Calculator for the next stage of sizing.</p>
+        <div class="next-stages">
+          <div class="next-stage">
+            <span class="num">04</span>
+            <h5>To-Be Design</h5>
+            <p>Process simplification, tech, capability.</p>
+          </div>
+          <div class="next-stage">
+            <span class="num">05</span>
+            <h5>FTE Sizing</h5>
+            <p>Detailed sizing per disposition.</p>
+          </div>
+          <div class="next-stage">
+            <span class="num">06</span>
+            <h5>Risk &amp; Transition</h5>
+            <p>Risk register, wave plan, transition roadmap.</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; position: relative;">
+          <a href="../fte-calculator/" class="btn">Open FTE Calculator →</a>
+          <button class="btn btn--ghost" onclick="window.print()">Print / Save PDF</button>
+        </div>
+      </div>
+
+      <div class="cta-box">
+        <h3>Want to <em>pressure-test</em> this blueprint?</h3>
+        <p>Designing the operating model is the easy part. Implementing it — with real people, real politics, and a real timeline — is where transformations succeed or stall. Happy to help.</p>
+        <div class="cta-row">
+          <a href="../contact.html" class="btn">Get in touch →</a>
+          <button class="btn btn--ghost" onclick="resetAll()">Start over</button>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        Built by Nishi Singh · <a href="../index.html">View portfolio</a> · <a href="../tom-diagnostic/">TOM Diagnostic</a> · <a href="../fte-calculator/">FTE Calculator</a> · Designer v1.0
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+// ============================================================================
+// GBS OPERATING MODEL DESIGNER
+// ============================================================================
+
+// ----- DATA: FUNCTION TAXONOMIES (the IP) -----------------------------------
+//
+// Each function has L1/L2 categories and a starter set of L3 processes.
+// Calibrated from real GBS engagement patterns.
+//
+// For each L3 process: defaults for vol/FTE are illustrative starting points.
+// Users edit them to match their context.
+
+const FUNCTIONS = {
+  finance: {
+    name: "Finance",
+    description: "P2P, R2R, O2C, FP&A, Treasury",
+    icon: "£",
+    processes: [
+      // P2P
+      { l1: "P2P", name: "Invoice processing", volume: 250000, fte: 18, location: "Regional", complexity: "Low", nuance: "No", std: 85 },
+      { l1: "P2P", name: "Vendor master data", volume: 12000, fte: 4, location: "Regional", complexity: "Low", nuance: "No", std: 90 },
+      { l1: "P2P", name: "T&E claims", volume: 80000, fte: 8, location: "Local", complexity: "Low", nuance: "Yes", std: 75 },
+      { l1: "P2P", name: "Vendor query resolution", volume: 35000, fte: 12, location: "Local", complexity: "Medium", nuance: "Yes", std: 50 },
+      { l1: "P2P", name: "Payment runs", volume: 5000, fte: 3, location: "Regional", complexity: "Medium", nuance: "No", std: 80 },
+      // R2R
+      { l1: "R2R", name: "GL accounting & journals", volume: 60000, fte: 14, location: "Regional", complexity: "Medium", nuance: "No", std: 70 },
+      { l1: "R2R", name: "Intercompany reconciliations", volume: 8000, fte: 6, location: "Regional", complexity: "High", nuance: "No", std: 60 },
+      { l1: "R2R", name: "Fixed asset accounting", volume: 4000, fte: 3, location: "Local", complexity: "Medium", nuance: "Yes", std: 55 },
+      { l1: "R2R", name: "Month-end close", volume: 144, fte: 22, location: "Local", complexity: "High", nuance: "Yes", std: 40 },
+      { l1: "R2R", name: "Statutory reporting", volume: 60, fte: 12, location: "Local", complexity: "High", nuance: "Yes", std: 20 },
+      // O2C
+      { l1: "O2C", name: "Customer invoicing", volume: 180000, fte: 14, location: "Regional", complexity: "Low", nuance: "No", std: 85 },
+      { l1: "O2C", name: "Cash application", volume: 95000, fte: 9, location: "Regional", complexity: "Low", nuance: "No", std: 90 },
+      { l1: "O2C", name: "Credit management", volume: 5000, fte: 7, location: "Local", complexity: "High", nuance: "Yes", std: 35 },
+      { l1: "O2C", name: "Collections", volume: 28000, fte: 16, location: "Local", complexity: "Medium", nuance: "Yes", std: 55 },
+      { l1: "O2C", name: "Dispute resolution", volume: 8500, fte: 6, location: "Local", complexity: "High", nuance: "Yes", std: 30 },
+      // FP&A / Treasury
+      { l1: "FP&A", name: "Management reporting", volume: 144, fte: 18, location: "HQ", complexity: "High", nuance: "No", std: 50 },
+      { l1: "FP&A", name: "Budgeting & forecasting", volume: 12, fte: 24, location: "HQ", complexity: "High", nuance: "Yes", std: 25 },
+      { l1: "Treasury", name: "Cash management", volume: 252, fte: 5, location: "HQ", complexity: "High", nuance: "No", std: 60 },
+      { l1: "Treasury", name: "Bank reconciliations", volume: 6000, fte: 4, location: "Regional", complexity: "Low", nuance: "No", std: 85 }
+    ]
+  },
+  hr: {
+    name: "HR",
+    description: "Hire-to-retire, payroll, employee services",
+    icon: "◎",
+    processes: [
+      // Hire
+      { l1: "Hire", name: "Recruitment screening & sourcing", volume: 8000, fte: 22, location: "Local", complexity: "Medium", nuance: "Yes", std: 50 },
+      { l1: "Hire", name: "Interview coordination", volume: 24000, fte: 12, location: "Regional", complexity: "Low", nuance: "Yes", std: 75 },
+      { l1: "Hire", name: "Offer management", volume: 3000, fte: 6, location: "Regional", complexity: "Medium", nuance: "Yes", std: 65 },
+      { l1: "Hire", name: "Onboarding administration", volume: 3000, fte: 8, location: "Regional", complexity: "Low", nuance: "Yes", std: 70 },
+      // Manage
+      { l1: "Manage", name: "Employee data administration", volume: 50000, fte: 14, location: "Regional", complexity: "Low", nuance: "No", std: 90 },
+      { l1: "Manage", name: "Benefits administration", volume: 25000, fte: 10, location: "Local", complexity: "Medium", nuance: "Yes", std: 50 },
+      { l1: "Manage", name: "Time & attendance", volume: 1200000, fte: 6, location: "Regional", complexity: "Low", nuance: "Yes", std: 80 },
+      { l1: "Manage", name: "Employee query resolution (Tier 1)", volume: 80000, fte: 18, location: "Regional", complexity: "Low", nuance: "Yes", std: 65 },
+      { l1: "Manage", name: "Employee relations & cases", volume: 1500, fte: 12, location: "Local", complexity: "High", nuance: "Yes", std: 25 },
+      // Pay
+      { l1: "Pay", name: "Payroll processing", volume: 144, fte: 16, location: "Local", complexity: "High", nuance: "Yes", std: 50 },
+      { l1: "Pay", name: "Payroll query resolution", volume: 18000, fte: 8, location: "Regional", complexity: "Medium", nuance: "Yes", std: 60 },
+      // Develop
+      { l1: "Develop", name: "L&D administration", volume: 12000, fte: 7, location: "Regional", complexity: "Low", nuance: "No", std: 80 },
+      { l1: "Develop", name: "Performance management cycles", volume: 2, fte: 14, location: "Local", complexity: "Medium", nuance: "Yes", std: 60 },
+      { l1: "Develop", name: "Talent & succession planning", volume: 12, fte: 9, location: "HQ", complexity: "High", nuance: "Yes", std: 30 },
+      // Exit
+      { l1: "Exit", name: "Offboarding administration", volume: 2500, fte: 4, location: "Regional", complexity: "Low", nuance: "Yes", std: 75 },
+      { l1: "Exit", name: "Exit interviews & analysis", volume: 1500, fte: 3, location: "Local", complexity: "Medium", nuance: "Yes", std: 50 }
+    ]
+  },
+  procurement: {
+    name: "Procurement",
+    description: "Source-to-pay, category management, supplier management",
+    icon: "⬡",
+    processes: [
+      { l1: "Source", name: "Sourcing event management", volume: 800, fte: 12, location: "Regional", complexity: "High", nuance: "Yes", std: 40 },
+      { l1: "Source", name: "Tactical sourcing & spot buys", volume: 18000, fte: 14, location: "Local", complexity: "Medium", nuance: "Yes", std: 55 },
+      { l1: "Source", name: "Category strategy development", volume: 60, fte: 18, location: "HQ", complexity: "High", nuance: "No", std: 30 },
+      { l1: "Source", name: "Market intelligence", volume: 240, fte: 6, location: "HQ", complexity: "High", nuance: "No", std: 35 },
+      { l1: "Contract", name: "Contract drafting & negotiation", volume: 2400, fte: 16, location: "Regional", complexity: "High", nuance: "Yes", std: 35 },
+      { l1: "Contract", name: "Contract lifecycle management", volume: 12000, fte: 8, location: "Regional", complexity: "Medium", nuance: "No", std: 70 },
+      { l1: "Buy", name: "Purchase order processing", volume: 280000, fte: 22, location: "Regional", complexity: "Low", nuance: "No", std: 90 },
+      { l1: "Buy", name: "PO change management", volume: 35000, fte: 8, location: "Regional", complexity: "Low", nuance: "No", std: 80 },
+      { l1: "Buy", name: "Goods receipt resolution", volume: 22000, fte: 7, location: "Local", complexity: "Medium", nuance: "Yes", std: 55 },
+      { l1: "Supplier", name: "Supplier onboarding", volume: 4000, fte: 6, location: "Regional", complexity: "Medium", nuance: "Yes", std: 70 },
+      { l1: "Supplier", name: "Supplier performance management", volume: 800, fte: 10, location: "Regional", complexity: "High", nuance: "Yes", std: 45 },
+      { l1: "Supplier", name: "Supplier risk management", volume: 1200, fte: 8, location: "HQ", complexity: "High", nuance: "No", std: 50 },
+      { l1: "Pay", name: "AP-procurement reconciliation", volume: 45000, fte: 9, location: "Regional", complexity: "Medium", nuance: "No", std: 75 }
+    ]
+  },
+  customer_service: {
+    name: "Customer Service",
+    description: "Inbound contact, case resolution, customer ops",
+    icon: "◐",
+    processes: [
+      { l1: "Contact", name: "Tier 1 customer queries", volume: 480000, fte: 35, location: "Regional", complexity: "Low", nuance: "Yes", std: 70 },
+      { l1: "Contact", name: "Tier 2 case resolution", volume: 95000, fte: 22, location: "Regional", complexity: "Medium", nuance: "Yes", std: 50 },
+      { l1: "Contact", name: "Tier 3 / expert escalations", volume: 12000, fte: 14, location: "Local", complexity: "High", nuance: "Yes", std: 25 },
+      { l1: "Contact", name: "Live chat support", volume: 220000, fte: 16, location: "Regional", complexity: "Low", nuance: "Yes", std: 75 },
+      { l1: "Contact", name: "Email response handling", volume: 180000, fte: 12, location: "Regional", complexity: "Low", nuance: "No", std: 80 },
+      { l1: "Contact", name: "Social media response", volume: 45000, fte: 8, location: "Regional", complexity: "Medium", nuance: "Yes", std: 50 },
+      { l1: "Order", name: "Order management & tracking", volume: 320000, fte: 14, location: "Regional", complexity: "Low", nuance: "No", std: 85 },
+      { l1: "Order", name: "Returns & refunds processing", volume: 75000, fte: 11, location: "Regional", complexity: "Low", nuance: "Yes", std: 70 },
+      { l1: "Order", name: "Complex order escalations", volume: 18000, fte: 9, location: "Local", complexity: "High", nuance: "Yes", std: 30 },
+      { l1: "Insight", name: "Quality monitoring & coaching", volume: 12000, fte: 14, location: "Local", complexity: "Medium", nuance: "Yes", std: 55 },
+      { l1: "Insight", name: "Voice of customer analytics", volume: 144, fte: 8, location: "HQ", complexity: "High", nuance: "No", std: 40 },
+      { l1: "Insight", name: "WFM & forecasting", volume: 365, fte: 6, location: "Regional", complexity: "Medium", nuance: "No", std: 75 }
+    ]
+  }
+};
+
+// ----- OPERATING MODEL OPTIONS ----------------------------------------------
+
+const OM_OPTIONS = {
+  delivery: [
+    { id: "retained", name: "Retained / In-Function", pros: "Keeps deep institutional knowledge; fast decisions; high business alignment.", cons: "Cost-heavy; limited scale economies; inconsistent standards across markets." },
+    { id: "captive", name: "Captive GBS", pros: "Strong control of quality & talent; consolidates scale; builds long-term capability.", cons: "Slower to stand up; significant upfront investment; needs sustained sponsorship." },
+    { id: "hybrid", name: "Hybrid (GBS + Outsourced)", pros: "Best-of-both — keep judgement work, outsource transactions; flexibility.", cons: "Governance overhead; vendor management capability needed; integration complexity." },
+    { id: "outsourced", name: "Fully Outsourced", pros: "Speed of activation; variable cost; access to mature processes & tech.", cons: "Loss of institutional knowledge; vendor lock-in risk; harder to differentiate." }
+  ],
+  hubs: [
+    { id: "1hub", name: "Single global hub", pros: "Maximum scale; one process, one standard; simplest governance.", cons: "Single point of failure; timezone gaps; political sensitivity in retained countries." },
+    { id: "2hubs", name: "Two regional hubs", pros: "Timezone coverage; risk diversification; balances scale with proximity.", cons: "Coordination cost; risk of regional variation; double the property footprint." },
+    { id: "3hubs", name: "Three+ regional hubs", pros: "Full timezone coverage; near-shore proximity; reduced concentration risk.", cons: "Highest cost; risk of divergence; complex inter-hub coordination." }
+  ],
+  geo: [
+    { id: "nearshore", name: "Near-shore only", pros: "Cultural & timezone alignment; reduces friction; less language risk.", cons: "Smaller talent pool; higher cost than off-shore; limited 24/7 coverage." },
+    { id: "offshore", name: "Off-shore primary", pros: "Lowest cost; large talent pools; mature service economies; 24/7 viable.", cons: "Timezone friction; language nuance; cultural distance from business." },
+    { id: "mixed", name: "Mixed near/off-shore", pros: "Optimises cost vs proximity by activity type; risk diversification.", cons: "More complex to manage; harder career paths; risk of A vs B team perception." }
+  ],
+  gov: [
+    { id: "functional", name: "Functional-led", pros: "Strong functional integrity; clear professional ladder; expertise depth.", cons: "Can drift from business needs; siloed decisions; slower customer response." },
+    { id: "business", name: "Business-led", pros: "Business outcomes prioritised; commercial mindset; faster local response.", cons: "Functional standards can erode; risk of duplication; weaker capability building." },
+    { id: "shared", name: "Shared accountability", pros: "Balances function and business; built for partnership; reflects matrix reality.", cons: "Accountability ambiguity if poorly designed; needs strong forums; slowest model." }
+  ]
+};
+
+// ----- STATE ----------------------------------------------------------------
+
+let state = {
+  function: null,
+  taxonomy: [],
+  om: { delivery: null, hubs: null, geo: null, gov: null },
+  dispositions: {},        // keyed by process id
+  overrides: {}            // tracks user-overridden auto-recs
+};
+
+const STORAGE_KEY = 'gbs-designer-state-v1';
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch (e) { /* localStorage may be disabled */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) { return null; }
+}
+
+function clearState() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+}
+
+// ----- NAVIGATION -----------------------------------------------------------
+
+let currentStage = 0;
+
+function startDesigner() {
+  document.getElementById('stage-bar').style.display = 'block';
+  goToStage(1);
+}
+
+function goToStage(stage) {
+  // Validation gates
+  if (stage >= 2 && state.taxonomy.length === 0) {
+    alert("Pick a function and confirm your taxonomy first.");
+    return;
+  }
+  if (stage >= 3 && (!state.om.delivery || !state.om.hubs || !state.om.geo || !state.om.gov)) {
+    alert("Make all four operating model choices first.");
+    return;
+  }
+
+  currentStage = stage;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + stage).classList.add('active');
+
+  // Update stage bar
+  document.querySelectorAll('.stage-step').forEach(b => {
+    const s = parseInt(b.dataset.stage);
+    b.classList.toggle('active', s === stage);
+    b.classList.toggle('complete', s < stage);
+    b.classList.toggle('locked', s > getMaxUnlockedStage());
+  });
+
+  // Render the stage content
+  if (stage === 1) renderTaxonomy();
+  if (stage === 2) renderOperatingModel();
+  if (stage === 3) renderDisposition();
+  if (stage === 4) renderSummary();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function getMaxUnlockedStage() {
+  if (state.taxonomy.length === 0) return 1;
+  if (!state.om.delivery || !state.om.hubs || !state.om.geo || !state.om.gov) return 2;
+  return 4;
+}
+
+// ============================================================================
+// STAGE 1 — TAXONOMY
+// ============================================================================
+
+function renderTaxonomy() {
+  // Render function picker
+  const picker = document.getElementById('function-picker');
+  picker.innerHTML = Object.entries(FUNCTIONS).map(([key, fn]) => `
+    <div class="fn-card ${state.function === key ? 'active' : ''}" onclick="selectFunction('${key}')">
+      <h4>${fn.icon} ${fn.name}</h4>
+      <p>${fn.description}</p>
+      <div class="fn-meta">${fn.processes.length} starter processes</div>
+    </div>
+  `).join('');
+
+  if (state.function) {
+    document.getElementById('taxonomy-area').style.display = 'block';
+    renderTaxonomyTable();
+  }
+}
+
+function selectFunction(key) {
+  // If switching function, confirm reset
+  if (state.function && state.function !== key && state.taxonomy.length > 0) {
+    if (!confirm("Switching function will replace your current taxonomy. Continue?")) return;
+  }
+
+  state.function = key;
+  state.taxonomy = FUNCTIONS[key].processes.map((p, i) => ({ id: 'p' + i, ...p }));
+  state.dispositions = {};
+  state.overrides = {};
+  saveState();
+  renderTaxonomy();
+  document.getElementById('stage-meta').textContent = 'Function: ' + FUNCTIONS[key].name;
+}
+
+function renderTaxonomyTable() {
+  const tbody = document.getElementById('tax-tbody');
+  tbody.innerHTML = state.taxonomy.map(p => `
+    <tr>
+      <td class="l1">${p.l1}</td>
+      <td class="proc-name"><input type="text" value="${escapeHtml(p.name)}" onchange="updateProcess('${p.id}', 'name', this.value)"></td>
+      <td><input type="number" min="0" value="${p.volume}" onchange="updateProcess('${p.id}', 'volume', parseInt(this.value) || 0)" style="max-width: 110px;"></td>
+      <td><input type="number" min="0" step="0.5" value="${p.fte}" onchange="updateProcess('${p.id}', 'fte', parseFloat(this.value) || 0)" style="max-width: 70px;"></td>
+      <td>
+        <select onchange="updateProcess('${p.id}', 'location', this.value)">
+          ${['HQ', 'Regional', 'Local'].map(l => `<option ${p.location === l ? 'selected' : ''}>${l}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select onchange="updateProcess('${p.id}', 'complexity', this.value)">
+          ${['Low', 'Medium', 'High'].map(c => `<option ${p.complexity === c ? 'selected' : ''}>${c}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select onchange="updateProcess('${p.id}', 'nuance', this.value)">
+          ${['No', 'Yes'].map(n => `<option ${p.nuance === n ? 'selected' : ''}>${n}</option>`).join('')}
+        </select>
+      </td>
+      <td><input type="number" min="0" max="100" value="${p.std}" onchange="updateProcess('${p.id}', 'std', Math.min(100, Math.max(0, parseInt(this.value) || 0)))" style="max-width: 70px;">%</td>
+      <td><button class="del-btn" onclick="deleteProcess('${p.id}')" title="Delete">✕</button></td>
+    </tr>
+  `).join('');
+
+  // Summary
+  document.getElementById('tax-count').textContent = state.taxonomy.length;
+  const totalFTE = state.taxonomy.reduce((a, b) => a + (b.fte || 0), 0);
+  const totalVol = state.taxonomy.reduce((a, b) => a + (b.volume || 0), 0);
+  const highComplex = state.taxonomy.filter(p => p.complexity === 'High').length;
+  document.getElementById('tax-fte').textContent = totalFTE.toLocaleString('en-GB', { maximumFractionDigits: 0 });
+  document.getElementById('tax-volume').textContent = totalVol.toLocaleString('en-GB');
+  document.getElementById('tax-complex').textContent = highComplex;
+}
+
+function updateProcess(id, field, value) {
+  const p = state.taxonomy.find(x => x.id === id);
+  if (!p) return;
+  p[field] = value;
+  saveState();
+  renderTaxonomyTable();
+}
+
+function deleteProcess(id) {
+  state.taxonomy = state.taxonomy.filter(p => p.id !== id);
+  delete state.dispositions[id];
+  delete state.overrides[id];
+  saveState();
+  renderTaxonomyTable();
+}
+
+function addProcess() {
+  const newId = 'custom-' + Date.now();
+  state.taxonomy.push({
+    id: newId, l1: 'Custom', name: 'New process', volume: 1000,
+    fte: 2, location: 'Regional', complexity: 'Medium', nuance: 'No', std: 60
+  });
+  saveState();
+  renderTaxonomyTable();
+}
+
+function resetTaxonomy() {
+  if (!state.function) return;
+  if (!confirm("Reset taxonomy to the starter set for this function? Your edits will be lost.")) return;
+  state.taxonomy = FUNCTIONS[state.function].processes.map((p, i) => ({ id: 'p' + i, ...p }));
+  state.dispositions = {};
+  state.overrides = {};
+  saveState();
+  renderTaxonomyTable();
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// ============================================================================
+// STAGE 2 — OPERATING MODEL
+// ============================================================================
+
+function renderOperatingModel() {
+  ['delivery', 'hubs', 'geo', 'gov'].forEach(key => {
+    const el = document.getElementById('om-' + key);
+    el.innerHTML = OM_OPTIONS[key].map(opt => `
+      <div class="om-option ${state.om[key] === opt.id ? 'selected' : ''}" onclick="selectOM('${key}', '${opt.id}')">
+        <h4>${opt.name}</h4>
+        <div class="pros">${opt.pros}</div>
+        <div class="cons">${opt.cons}</div>
+      </div>
+    `).join('');
+  });
+}
+
+function selectOM(key, value) {
+  state.om[key] = value;
+  saveState();
+  renderOperatingModel();
+
+  // Auto-update unlock state for next stage button
+  document.querySelectorAll('.stage-step').forEach(b => {
+    const s = parseInt(b.dataset.stage);
+    b.classList.toggle('locked', s > getMaxUnlockedStage());
+  });
+}
+
+// ============================================================================
+// STAGE 3 — DISPOSITION
+// ============================================================================
+
+// The recommendation engine — the heart of the IP
+function recommendDisposition(p) {
+  // Volume tier
+  const volHigh = p.volume >= 50000;
+  const volMed = p.volume >= 5000 && p.volume < 50000;
+  // Complexity
+  const cpx = p.complexity;
+  // Local nuance
+  const nuance = p.nuance === 'Yes';
+  // Standardisation
+  const stdHigh = p.std >= 70;
+  const stdMed = p.std >= 40 && p.std < 70;
+
+  // Modifiers from operating model choices
+  const omHybridOrOut = state.om.delivery === 'hybrid' || state.om.delivery === 'outsourced';
+
+  // Rules (ordered — first match wins, except for Automate which can override)
+  // 1. High volume + high std + low complexity + low nuance → AUTOMATE
+  if (volHigh && stdHigh && cpx === 'Low' && !nuance) return { rec: 'Automate', rationale: 'High volume, highly standardisable, low complexity, no local nuance — strong automation candidate.' };
+  // 2. Low complexity + high std + commodity (no nuance) + hybrid/outsourced model → OUTSOURCE
+  if (cpx === 'Low' && stdHigh && !nuance && omHybridOrOut) return { rec: 'Outsource', rationale: 'Commodity activity, low complexity, hybrid/outsourced operating model — natural outsource fit.' };
+  // 3. High volume + medium-to-high std + low/med complexity + low nuance → HUB
+  if (volMed && (stdHigh || stdMed) && (cpx === 'Low' || cpx === 'Medium') && !nuance) return { rec: 'Hub', rationale: 'Volume + standardisation potential without strong local nuance — clear hub candidate.' };
+  if (volHigh && (stdHigh || stdMed) && cpx !== 'High') return { rec: 'Hub', rationale: 'High volume with standardisation potential — scale economics favour hub delivery.' };
+  // 4. High complexity + low volume → COE
+  if (cpx === 'High' && !volHigh) return { rec: 'CoE', rationale: 'High judgement, scarce expertise, lower volume — best held in a Centre of Excellence.' };
+  // 5. High local nuance + medium-high complexity → STAY IN MARKET
+  if (nuance && (cpx === 'Medium' || cpx === 'High')) return { rec: 'Stay in Market', rationale: 'Local nuance and judgement-heavy — keep close to the customer/market.' };
+  // 6. Low std + local nuance → STAY IN MARKET
+  if (!stdHigh && !stdMed && nuance) return { rec: 'Stay in Market', rationale: 'Low standardisation potential and local nuance — moving offshore is risky.' };
+  // 7. High volume + low complexity → HUB
+  if (volHigh && cpx === 'Low') return { rec: 'Hub', rationale: 'High volume, low complexity — hub-scale processing.' };
+  // Default — HUB if standardisable, else STAY IN MARKET
+  if (stdHigh || stdMed) return { rec: 'Hub', rationale: 'Standardisable with no overriding local factor — defaults to hub.' };
+  return { rec: 'Stay in Market', rationale: 'No strong driver to move — retain in-market unless evidence emerges.' };
+}
+
+function renderDisposition() {
+  const tbody = document.getElementById('disp-tbody');
+  tbody.innerHTML = state.taxonomy.map(p => {
+    const rec = recommendDisposition(p);
+    const current = state.dispositions[p.id] || rec.rec;
+    const isOverride = state.overrides[p.id];
+
+    // Set initial disposition if not set
+    if (!state.dispositions[p.id]) state.dispositions[p.id] = rec.rec;
+
+    return `
+      <tr>
+        <td class="proc-cell">
+          <div class="proc-name">${escapeHtml(p.name)}</div>
+          <span class="proc-l1">${p.l1} · ${p.complexity}${p.nuance === 'Yes' ? ' · Nuanced' : ''}</span>
+        </td>
+        <td>${p.fte}</td>
+        <td>
+          <select class="${isOverride ? 'override' : ''}" onchange="updateDisposition('${p.id}', this.value, '${rec.rec.replace(/'/g, '')}')">
+            ${['Stay in Market', 'Hub', 'CoE', 'Outsource', 'Automate', 'Retire'].map(d =>
+              `<option ${current === d ? 'selected' : ''}>${d}</option>`
+            ).join('')}
+          </select>
+          ${!isOverride ? `<span class="recommended">Recommended: ${rec.rec}</span>` : '<span class="recommended" style="color: var(--accent-warm);">Manually overridden</span>'}
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  saveState();
+  renderMatrix();
+  renderStackBar();
+  renderHeadline();
+}
+
+function updateDisposition(id, newValue, recommendedValue) {
+  state.dispositions[id] = newValue;
+  state.overrides[id] = (newValue !== recommendedValue);
+  saveState();
+  renderDisposition();
+}
+
+const DISP_COLOURS = {
+  'Stay in Market': '#FF7043',
+  'Hub': '#D4FF3A',
+  'CoE': '#BC8CFF',
+  'Outsource': '#58A6FF',
+  'Automate': '#FFB347',
+  'Retire': '#8A8A92'
+};
+
+function renderStackBar() {
+  // Calculate FTE per disposition
+  const totals = {};
+  let total = 0;
+  state.taxonomy.forEach(p => {
+    const d = state.dispositions[p.id] || 'Stay in Market';
+    totals[d] = (totals[d] || 0) + (p.fte || 0);
+    total += (p.fte || 0);
+  });
+
+  const order = ['Stay in Market', 'Hub', 'CoE', 'Outsource', 'Automate', 'Retire'];
+  const stackEl = document.getElementById('stack-bar');
+  const legendEl = document.getElementById('stack-legend');
+
+  stackEl.innerHTML = order.filter(d => totals[d]).map(d => {
+    const pct = total > 0 ? (totals[d] / total) * 100 : 0;
+    const fg = (d === 'Hub' || d === 'Automate') ? 'var(--bg)' : 'var(--bg)';
+    return `<div class="stack-seg" style="width: ${pct}%; background: ${DISP_COLOURS[d]}; color: ${fg};">${pct >= 8 ? Math.round(pct) + '%' : ''}</div>`;
+  }).join('');
+
+  legendEl.innerHTML = order.filter(d => totals[d]).map(d => {
+    const pct = total > 0 ? (totals[d] / total) * 100 : 0;
+    return `
+      <div class="stack-legend-item">
+        <div class="stack-legend-dot" style="background: ${DISP_COLOURS[d]};"></div>
+        <span>${d} <span style="color: ${DISP_COLOURS[d]};">${Math.round(pct)}%</span></span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderHeadline() {
+  // % FTE moving location (Stay in Market = staying; everything else = moving)
+  let total = 0, moving = 0;
+  state.taxonomy.forEach(p => {
+    const d = state.dispositions[p.id] || 'Stay in Market';
+    total += (p.fte || 0);
+    if (d !== 'Stay in Market') moving += (p.fte || 0);
+  });
+  const pct = total > 0 ? Math.round((moving / total) * 100) : 0;
+  document.getElementById('moving-pct').textContent = pct + '%';
+}
+
+function renderMatrix() {
+  const svg = document.getElementById('matrix-svg');
+  svg.innerHTML = '';
+  const W = 320, H = 320, M = 40;
+  // Axes
+  const ax = (x1, y1, x2, y2) => {
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+    l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+    l.setAttribute('stroke', '#3A3A44'); l.setAttribute('stroke-width', 1);
+    svg.appendChild(l);
+  };
+  // X axis (Standardisation %)
+  ax(M, H - M, W - M, H - M);
+  // Y axis (Volume - log scale visual)
+  ax(M, M, M, H - M);
+  // Quadrant dividers
+  const midX = M + (W - 2*M) / 2;
+  const midY = M + (H - 2*M) / 2;
+  ax(midX, M, midX, H - M);
+  ax(M, midY, W - M, midY);
+
+  // Labels
+  const lbl = (x, y, t, opts = {}) => {
+    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txt.setAttribute('x', x); txt.setAttribute('y', y);
+    txt.setAttribute('text-anchor', opts.anchor || 'middle');
+    txt.setAttribute('font-family', 'JetBrains Mono, monospace');
+    txt.setAttribute('font-size', opts.size || 9);
+    txt.setAttribute('fill', opts.fill || '#5C5C66');
+    txt.setAttribute('letter-spacing', '0.05em');
+    txt.textContent = t;
+    svg.appendChild(txt);
+  };
+  // Axis labels
+  lbl(W / 2, H - 12, 'STANDARDISATION %', { fill: '#8A8A92' });
+  const yLbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  yLbl.setAttribute('x', 14); yLbl.setAttribute('y', H / 2);
+  yLbl.setAttribute('text-anchor', 'middle'); yLbl.setAttribute('fill', '#8A8A92');
+  yLbl.setAttribute('font-family', 'JetBrains Mono, monospace');
+  yLbl.setAttribute('font-size', 9); yLbl.setAttribute('letter-spacing', '0.05em');
+  yLbl.setAttribute('transform', `rotate(-90 14 ${H / 2})`);
+  yLbl.textContent = 'VOLUME (log)';
+  svg.appendChild(yLbl);
+
+  // Quadrant labels
+  lbl(midX + (W - 2*M)/4, M + 14, 'HUB / AUTOMATE', { fill: '#5C5C66', size: 8 });
+  lbl(M + (W - 2*M)/4, M + 14, 'COE / IN-MARKET', { fill: '#5C5C66', size: 8 });
+  lbl(midX + (W - 2*M)/4, H - M - 8, 'OUTSOURCE', { fill: '#5C5C66', size: 8 });
+  lbl(M + (W - 2*M)/4, H - M - 8, 'STAY IN MARKET', { fill: '#5C5C66', size: 8 });
+
+  // Plot data points
+  const maxVol = Math.max(...state.taxonomy.map(p => p.volume || 1), 1);
+  const minVol = Math.min(...state.taxonomy.filter(p => p.volume > 0).map(p => p.volume), 1);
+  const logVol = v => Math.log(Math.max(v, 1));
+  const logMax = logVol(maxVol);
+  const logMin = logVol(minVol);
+
+  state.taxonomy.forEach(p => {
+    const x = M + (p.std / 100) * (W - 2*M);
+    const yNorm = (logVol(p.volume) - logMin) / Math.max(0.01, logMax - logMin);
+    const y = (H - M) - yNorm * (H - 2*M);
+    const r = Math.max(3, Math.min(11, Math.sqrt(p.fte || 1) * 1.5));
+    const d = state.dispositions[p.id] || 'Stay in Market';
+    const col = DISP_COLOURS[d];
+
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', r);
+    c.setAttribute('fill', col);
+    c.setAttribute('fill-opacity', 0.6);
+    c.setAttribute('stroke', col);
+    c.setAttribute('stroke-width', 1.5);
+    c.setAttribute('data-name', p.name);
+    svg.appendChild(c);
+  });
+}
+
+// ============================================================================
+// STAGE 4 — SUMMARY
+// ============================================================================
+
+function renderSummary() {
+  const fn = FUNCTIONS[state.function];
+
+  // Function summary
+  const totalFTE = state.taxonomy.reduce((a, b) => a + (b.fte || 0), 0);
+  const totalVol = state.taxonomy.reduce((a, b) => a + (b.volume || 0), 0);
+  document.getElementById('summary-function').innerHTML = `
+    <div class="summary-row"><div class="k">Function in scope</div><div class="v">${fn.name}</div></div>
+    <div class="summary-row"><div class="k">Total processes</div><div class="v">${state.taxonomy.length}</div></div>
+    <div class="summary-row"><div class="k">Total FTE</div><div class="v">${totalFTE.toLocaleString('en-GB', {maximumFractionDigits: 1})}</div></div>
+    <div class="summary-row"><div class="k">Annual volume</div><div class="v">${totalVol.toLocaleString('en-GB')} items</div></div>
+  `;
+
+  // OM choices
+  const omLabel = (k) => OM_OPTIONS[k].find(o => o.id === state.om[k])?.name || '—';
+  document.getElementById('summary-om').innerHTML = `
+    <div class="summary-row"><div class="k">Service delivery model</div><div class="v">${omLabel('delivery')}</div></div>
+    <div class="summary-row"><div class="k">Hub footprint</div><div class="v">${omLabel('hubs')}</div></div>
+    <div class="summary-row"><div class="k">Geography strategy</div><div class="v">${omLabel('geo')}</div></div>
+    <div class="summary-row"><div class="k">Governance model</div><div class="v">${omLabel('gov')}</div></div>
+  `;
+
+  // Disposition summary
+  const totals = {};
+  let movingFTE = 0;
+  state.taxonomy.forEach(p => {
+    const d = state.dispositions[p.id] || 'Stay in Market';
+    totals[d] = (totals[d] || 0) + (p.fte || 0);
+    if (d !== 'Stay in Market') movingFTE += (p.fte || 0);
+  });
+  const overrideCount = Object.values(state.overrides).filter(v => v).length;
+
+  const order = ['Stay in Market', 'Hub', 'CoE', 'Outsource', 'Automate', 'Retire'];
+  const rows = order.filter(d => totals[d]).map(d => {
+    const pct = totalFTE > 0 ? Math.round((totals[d] / totalFTE) * 100) : 0;
+    return `<div class="summary-row"><div class="k">${d}</div><div class="v"><span class="disp-tag disp-${d === 'Stay in Market' ? 'stay' : d.toLowerCase().replace(/ /g, '-')}">${totals[d].toFixed(1)} FTE · ${pct}%</span></div></div>`;
+  }).join('');
+
+  document.getElementById('summary-disposition').innerHTML = `
+    ${rows}
+    <div class="summary-row"><div class="k">FTE moving location</div><div class="v" style="color: var(--accent); font-weight: 500;">${movingFTE.toFixed(1)} FTE (${totalFTE > 0 ? Math.round((movingFTE / totalFTE) * 100) : 0}%)</div></div>
+    <div class="summary-row"><div class="k">Manual overrides</div><div class="v">${overrideCount} of ${state.taxonomy.length} processes</div></div>
+  `;
+
+  // Process-by-process table
+  document.getElementById('summary-tbody').innerHTML = state.taxonomy.map(p => {
+    const d = state.dispositions[p.id] || 'Stay in Market';
+    const tagClass = d === 'Stay in Market' ? 'disp-stay' : 'disp-' + d.toLowerCase().replace(/ /g, '-');
+    return `
+      <tr>
+        <td class="proc-cell">
+          <div class="proc-name">${escapeHtml(p.name)}</div>
+          <span class="proc-l1">${p.l1}</span>
+        </td>
+        <td>${p.fte}</td>
+        <td>${p.location}</td>
+        <td><span class="disp-tag ${tagClass}">${d}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============================================================================
+// LIFECYCLE
+// ============================================================================
+
+function loadSavedSession() {
+  const saved = loadState();
+  if (!saved) return;
+  state = saved;
+  startDesigner();
+  // Determine where to resume
+  let resumeStage = 1;
+  if (state.taxonomy.length > 0) resumeStage = 2;
+  if (state.om.delivery && state.om.hubs && state.om.geo && state.om.gov) resumeStage = 3;
+  if (Object.keys(state.dispositions).length > 0) resumeStage = 4;
+  goToStage(resumeStage);
+  if (state.function) {
+    document.getElementById('stage-meta').textContent = 'Function: ' + FUNCTIONS[state.function].name;
+  }
+}
+
+function resetAll() {
+  if (!confirm("Clear all your work and start over?")) return;
+  clearState();
+  state = {
+    function: null,
+    taxonomy: [],
+    om: { delivery: null, hubs: null, geo: null, gov: null },
+    dispositions: {},
+    overrides: {}
+  };
+  document.getElementById('stage-bar').style.display = 'none';
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-intro').classList.add('active');
+  document.getElementById('resume-btn').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Check for saved session on load
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = loadState();
+  if (saved && saved.taxonomy && saved.taxonomy.length > 0) {
+    document.getElementById('resume-btn').style.display = 'inline-flex';
+  }
+});
+
+</script>
+
+</body>
+</html>
